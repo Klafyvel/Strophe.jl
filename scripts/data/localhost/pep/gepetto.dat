@@ -1,0 +1,15 @@
+return {
+	["storage:bookmarks"] = {
+		["affiliations"] = {
+			["gepetto@localhost"] = "owner";
+		};
+		["subscribers"] = {};
+		["name"] = "storage:bookmarks";
+		["config"] = {
+			["access_model"] = "whitelist";
+			["persist_items"] = false;
+			["send_last_published_item"] = "never";
+			["max_items"] = 1;
+		};
+	};
+};

@@ -1,0 +1,38 @@
+# Example docker-compose.yml for Prosody
+# Documentation is available at:
+# https://prosody.im/doc/docker
+
+# Edit this file as necessary. Run 'docker compose up -d' to apply changes.
+# Run 'docker compose up -d --pull' to check for and apply any Prosody updates.
+
+services:
+  prosody:
+    # Change 13.0 to the branch you want to use
+    image: prosodyim/prosody:13.0
+
+    # Always check for updates when starting
+    pull_policy: always
+
+    # Automatically start Prosody, e.g. when your system starts, if it was
+    # running previously
+    restart: unless-stopped
+
+    # Network ports to expose
+    ports:
+      # Client connections
+      - 5222:5222
+      # Server-to-server connections
+      - 5269:5269
+
+    # Directories where data will be stored
+    volumes:
+      # This will use a 'data' directory in the same directory as the
+      # docker-compose.yml. Make this directory before you start Prosody,
+      # and ensure it is owned by a non-root user. The ownership of the
+      # directory will control the default user id that Prosody runs as.
+      - ./data:/var/lib/prosody
+
+    # Set environment variables. See the documentation for all possible options.
+    environment:
+      PROSODY_VIRTUAL_HOSTS: localhost
+      PROSODY_LOGLEVEL: info
