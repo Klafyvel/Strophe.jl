@@ -36,6 +36,8 @@ const titles = Dict(
     "91-developer.md" => "Developer docs",
     "low-level-api" => "Low level API",
     "low-level-api/examples" => "Examples",
+    "high-level-api" => "High level API",
+    "high-level-api/examples" => "Examples",
 )
 
 function recursively_list_pages(folder; path_prefix = "")

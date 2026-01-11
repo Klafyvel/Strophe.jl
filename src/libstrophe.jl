@@ -1,6 +1,9 @@
+"""
+The low-level binding to the underlying C-library libstrophe.
+"""
 module LibStrophe
 
-using DocStringExtensions: SIGNATURES
+using DocStringExtensions: SIGNATURES, TYPEDFIELDS
 using libstrophe_jll: libstrophe_jll, libstrophe
 export libstrophe_jll
 
@@ -56,7 +59,7 @@ typedef void ( * xmpp_log_handler ) ( void * userdata , xmpp_log_level_t level ,
 """
 const xmpp_log_handler = Ptr{Cvoid}
 
-struct _xmpp_log_t
+mutable struct _xmpp_log_t
     handler::xmpp_log_handler
     userdata::Ptr{Cvoid}
 end
@@ -176,12 +179,24 @@ const xmpp_conn_t = _xmpp_conn_t
 
 mutable struct _xmpp_stanza_t end
 
+"""
+Internal, opaque, type used for storing stanza.
+"""
 const xmpp_stanza_t = _xmpp_stanza_t
 
 mutable struct _xmpp_sm_t end
 
 const xmpp_sm_state_t = _xmpp_sm_t
 
+"""
+Status flag passed to a [`xmpp_conn_handler`](@ref)
+
+Members:
+* `XMPP_CONN_CONNECT`
+* `XMPP_CONN_RAW_CONNECT`
+* `XMPP_CONN_DISCONNECT`
+* `XMPP_CONN_FAIL`
+"""
 @enum xmpp_conn_event_t::UInt32 begin
     XMPP_CONN_CONNECT = 0
     XMPP_CONN_RAW_CONNECT = 1
@@ -189,6 +204,35 @@ const xmpp_sm_state_t = _xmpp_sm_t
     XMPP_CONN_FAIL = 3
 end
 
+"""
+Error type enumeration of the error stream passed to a [`xmpp_conn_handler`](@ref)
+
+Members:
+* `XMPP_SE_BAD_FORMAT`
+* `XMPP_SE_BAD_NS_PREFIX`
+* `XMPP_SE_CONFLICT`
+* `XMPP_SE_CONN_TIMEOUT`
+* `XMPP_SE_HOST_GONE`
+* `XMPP_SE_HOST_UNKNOWN`
+* `XMPP_SE_IMPROPER_ADDR`
+* `XMPP_SE_INTERNAL_SERVER_ERROR`
+* `XMPP_SE_INVALID_FROM`
+* `XMPP_SE_INVALID_ID`
+* `XMPP_SE_INVALID_NS`
+* `XMPP_SE_INVALID_XML`
+* `XMPP_SE_NOT_AUTHORIZED`
+* `XMPP_SE_POLICY_VIOLATION`
+* `XMPP_SE_REMOTE_CONN_FAILED`
+* `XMPP_SE_RESOURCE_CONSTRAINT`
+* `XMPP_SE_RESTRICTED_XML`
+* `XMPP_SE_SEE_OTHER_HOST`
+* `XMPP_SE_SYSTEM_SHUTDOWN`
+* `XMPP_SE_UNDEFINED_CONDITION`
+* `XMPP_SE_UNSUPPORTED_ENCODING`
+* `XMPP_SE_UNSUPPORTED_STANZA_TYPE`
+* `XMPP_SE_UNSUPPORTED_VERSION`
+* `XMPP_SE_XML_NOT_WELL_FORMED`
+"""
 @enum xmpp_error_type_t::UInt32 begin
     XMPP_SE_BAD_FORMAT = 0
     XMPP_SE_BAD_NS_PREFIX = 1
@@ -248,6 +292,11 @@ Members:
     XMPP_CERT_ELEMENT_MAX = 10
 end
 
+"""
+Represents an [XMPP stream error](https://datatracker.ietf.org/doc/html/rfc6120#section-4.9).
+
+$(TYPEDFIELDS)
+"""
 struct xmpp_stream_error_t
     type::xmpp_error_type_t
     text::Ptr{Cchar}
@@ -1315,7 +1364,7 @@ caller does not need to clone it.
 
 Parameters:
 * `ctx` a Strophe context object
-* `str` stanza in `C_NULL` terminated string representation
+* `str` stanza in `NULL` terminated string representation
 
 Returns a stanza object or `C_NULL` on an error
 """
@@ -2678,5 +2727,22 @@ const XMPP_CONN_FLAG_ENABLE_COMPRESSION = Culong(1) << 6
 const XMPP_CONN_FLAG_COMPRESSION_DONT_RESET = Culong(1) << 7
 
 const XMPP_SHA1_DIGEST_SIZE = 20
+
+# Non public elements used to rewrite xmpp_run in a Julia Task-friendly way.
+@enum LoopStatus::UInt32 begin
+    XMPP_LOOP_NOTSTARTED = 0
+    XMPP_LOOP_RUNNING = 1
+    XMPP_LOOP_QUIT = 2
+end
+mutable struct _ctx
+    mem::Ptr{Cvoid}
+    log::Ptr{Cvoid}
+    verbosity::Cint
+    rand::Ptr{Cvoid}
+    loop_status::LoopStatus
+    connlist::Ptr{Cvoid}
+    handlist::Ptr{Cvoid}
+    timeout::Culong
+end
 
 end # module

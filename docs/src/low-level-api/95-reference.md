@@ -1,4 +1,4 @@
-# [Reference](@id reference)
+# [Reference](@id low-level-reference)
 
 This is an adaptation of the documentation of [libstrophe](https://strophe.im/libstrophe/doc/0.13.0) to the Julia binding.
 
@@ -11,6 +11,7 @@ Pages = ["95-reference.md"]
 ## Misc
 
 ```@docs
+Strophe.LibStrophe
 Strophe.LibStrophe.xmpp_free
 ```
 
@@ -93,6 +94,9 @@ Strophe.LibStrophe.xmpp_conn_t
 Strophe.LibStrophe.xmpp_sm_callback
 Strophe.LibStrophe.xmpp_conn_set_sm_callback
 Strophe.LibStrophe.xmpp_conn_restore_sm_state
+Strophe.LibStrophe.xmpp_conn_event_t
+Strophe.LibStrophe.xmpp_stream_error_t
+Strophe.LibStrophe.xmpp_error_type_t
 ```
 
 ## [SSL/TLS specific functionality](@id low-level-SSL)
@@ -147,6 +151,7 @@ Strophe.LibStrophe.xmpp_ctx_set_timeout
 ## [Stanza](@id low-level-stanza)
 
 ```@docs
+Strophe.LibStrophe.xmpp_stanza_t
 Strophe.LibStrophe.xmpp_stanza_new
 Strophe.LibStrophe.xmpp_stanza_clone
 Strophe.LibStrophe.xmpp_stanza_copy

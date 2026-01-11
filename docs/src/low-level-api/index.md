@@ -1,4 +1,4 @@
-# Low-level API
+# [Low-level API](@id low-level-api)
 
 The low-level API is a direct binding to [the underlying libstrophe library](https://strophe.im/libstrophe/doc/0.13.0).
 
