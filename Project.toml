@@ -8,6 +8,7 @@ projects = ["test", "docs"]
 
 [deps]
 DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+EnumX = "4e289a0a-7415-4d19-859d-a7e5c4648b56"
 libstrophe_jll = "9ba4b727-a6ae-5378-842c-8467618b2537"
 
 [compat]
