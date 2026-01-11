@@ -35,6 +35,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+      - name: Start prosody server
+        run: docker-compose -f scripts/docker-compose.yml up -d
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ inputs.version }}
@@ -50,3 +52,6 @@ jobs:
         with:
           file: lcov.info
           token: ${{ secrets.codecov_token }}
+      - name: Stop containers
+        if: always()
+        run: docker-compose -f scripts/docker-compose.yml down

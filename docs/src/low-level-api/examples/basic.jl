@@ -1,6 +1,6 @@
 #=
 
-# Basic example
+# [Basic example](@id low-level-basic-example)
 
 This is a port of the [basic example from libstrophe](https://github.com/strophe/libstrophe/blob/master/examples/basic.c) to Julia.
 
@@ -14,23 +14,30 @@ with `docker-compose up`. Depending on your platform, you might need sudo.
 
 import Strophe: LibStrophe
 
+# The underlying libstrophe needs initialization.
+
 LibStrophe.xmpp_initialize()
 
 # ## Creation of a callback to react to connection events
+# The underlying libstrophe relies heavily on callback functions that the user
+# needs to register and are then called when needed. The first one you will
+# encounter is the connection handler, called for events related with the connection.
 
 function connection_handler(conn, status, error, stream_error, userdata)
+    ## libstrophe passes around opaque pointers that you can use to pass around
+    ## any data you want. In this example we pass a pointer to the current context.
     ctx = userdata
     if status == LibStrophe.XMPP_CONN_CONNECT # We just connected
         @info "Connected!"
         LibStrophe.xmpp_disconnect(conn)
-    else
+    else # Something else happended.
         @info "Disconnected!"
         LibStrophe.xmpp_stop(ctx) # stop the event loop
     end
     return nothing
 end
 
-# We need to build a c function to get a pointer that we can use as a callback
+# We need to build a C function to get a pointer that we can use as a callback
 const connection_handler_c = @cfunction(
     connection_handler, Cvoid, (
         Ptr{LibStrophe.xmpp_conn_t}, LibStrophe.xmpp_conn_event_t,
@@ -39,6 +46,9 @@ const connection_handler_c = @cfunction(
 )
 
 # ## Creation of the XMPP context
+# The high level control of the library is done through an object called a context.
+# In practice, you will always handle a pointer to such an object. You can check
+# [the relevant section of the reference for functions related to context handling](@ref low-level-contexts-reference).
 #
 # First, we initialize libstrophe's logger. You can use `C_NULL` to silence it,
 # or use other log levels. For example, `LibStrophe.XMPP_LEVEL_DEBUG` will get
@@ -51,14 +61,19 @@ log = LibStrophe.xmpp_get_default_logger(LibStrophe.XMPP_LEVEL_INFO)
 ctx = LibStrophe.xmpp_ctx_new(C_NULL, log)
 
 # ## Connection to ther server
+# From the context, we can generate connections. Again, you will deal with a
+# pointer to such an object. Check
+# [the relevant section of the reference for functions related to connections handling](@ref low-level-connections-reference)
+#
 # The connection is configured through flags.
-# The docker image does not have a proper certificate, so we force libstrophe
-# to trust it. In real life, you probably don't want to do that!
+# The docker image we use for developpment does not have a proper certificate,
+# so we force libstrophe to trust it. In real life, you probably don't want to
+# do that!
 flags = LibStrophe.XMPP_CONN_FLAG_TRUST_TLS
 conn = LibStrophe.xmpp_conn_new(ctx)
 LibStrophe.xmpp_conn_set_flags(conn, flags)
 
-# You can change that depending on your configuration
+# You can change the JID and password depending on your configuration
 jid = "gepetto@localhost"
 password = "plopiplop"
 LibStrophe.xmpp_conn_set_jid(conn, jid)
@@ -92,4 +107,6 @@ LibStrophe.xmpp_shutdown()
 # info	Client disconnected: connection closed
 # ```
 #
-# We sucessfully connected!
+# We sucessfully connected! But we did not do anything exciting yet. Head over
+# the [low-level API bot example](@ref low-level-bot-example) to actually send
+# messages through XMPP!

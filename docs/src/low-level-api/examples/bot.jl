@@ -1,6 +1,6 @@
 #=
 
-# Bot example
+# [Bot example](@id low-level-bot-example)
 
 This is a port in Julia of [the bot example from libstrophe](https://github.com/strophe/libstrophe/blob/master/examples/bot.c).
 
@@ -11,71 +11,104 @@ with `docker-compose up`. Depending on your platform, you might need sudo.
 You also need [go-sendxmpp](https://salsa.debian.org/mdosch/go-sendxmpp) to listen
 to messages from the other side.
 
+If you need a simpler example on how to set-up a basic connection, you can read
+first [the basic example](@ref low-level-basic-example) page.
+
 =#
 import Strophe: LibStrophe
 
 if Threads.nthreads() < 2
-    @error "This example is meant to run on at least two threads. Start julia with the `-t 2` or `-t auto` parameter."
-    exit(1)
+    error("This example is meant to run on at least two threads. Start julia with the `-t 2` or `-t auto` parameter.")
 end
 
 # ## Boilerplate
 # We want some facilities to listen to our xmpp server. The idea is quite simple:
 # run `go-sendxmpp -n -p plopiplop -u pinocchio@localhost -l` to listen to messages
 # and collect messages in a buffer.
-
-# Run a process in parallel to listen to our inbox.
+#
+# First, we run a process in parallel to listen to our inbox.
 
 pinocchio = PipeBuffer()
-listener = run(`go-sendxmpp -n -p plopiplop -u pinocchio@localhost -l`, devnull, pinocchio, stderr, wait = false)
+listener = run(
+    pipeline(
+        `go-sendxmpp -n -p plopiplop -u pinocchio@localhost -l`,
+        stdin = devnull, stdout = pinocchio, stderr = devnull
+    ), wait = false
+)
 
-# A simple function that we will run in parallel of the main thread to send messages
-# to the bot.
+# Then, we write a simple function that we will run in parallel of the main
+# thread to send messages to the bot. It sends the message twice: once to ourselves
+# and once to the destination for visual consistency.
 
 function say_as_pinocchio(to, msg)
     io = PipeBuffer()
-    # Let's send the message to ourselves as well for pretty display
     write(io, msg)
     run(`go-sendxmpp -n -p plopiplop -u pinocchio@localhost pinocchio@localhost`, io, devnull, stderr)
-    # Then to the recipient
     io = PipeBuffer()
     write(io, msg)
     return run(`go-sendxmpp -n -p plopiplop -u pinocchio@localhost $to`, io, devnull, stderr)
 end
 
 # ## Structure of the bot
-# libstrophe allows registering handlers. Our bot will be able to respond to version
+# `libstrophe` allows registering handlers. Our bot will be able to respond to version
 # requests, messages, and connections.
 # ## Global state
 # In this example, we store the state of the bot in global variables
 reconnect = true
 
 # ## Version handler
-# This is the function that will be called when we receive a request for the version.
+# Our bot will implement [XEP-0092 (Software Version)](https://xmpp.org/extensions/xep-0092.html).
+# This means other XMPP entities will be able to send a query for the bot version
+# and we will respond accordingly. The [example section of the XEP](https://xmpp.org/extensions/xep-0092.html#examples)
+# is quite explicit on what the reply should look like. We will build something like:
+# ```xml
+# <iq
+#     type='result'
+#     to='<destination>'
+#     from='<us>'
+#     id='version_1'>
+#   <query xmlns='jabber:iq:version'>
+#     <name>LibStrophe example bot</name>
+#     <version>1.0</version>
+#   </query>
+# </iq>
+# ```
+#
+# As usual with libstrophe, this is done through a callback function. You might
+# want to have a look at the [low-level stanza handling reference](@ref low-level-stanza).
+
 
 function version_handler(conn, stanza, userdata)
+    ## As in the basic example, we user the opaque `userdata` to pass around the
+    ## context.
     ctx = userdata
     @info "Received version request." LibStrophe.xmpp_stanza_get_from(stanza)
 
     reply = LibStrophe.xmpp_stanza_reply(stanza)
     LibStrophe.xmpp_stanza_set_type(reply, "result")
 
+    ## First build the `<query/>` node
     query = LibStrophe.xmpp_stanza_new(ctx)
     LibStrophe.xmpp_stanza_set_name(query, "query")
     ns = LibStrophe.xmpp_stanza_get_ns(LibStrophe.xmpp_stanza_get_children(stanza))
     if (ns ≠ C_NULL)
         LibStrophe.xmpp_stanza_set_ns(query, ns)
     end
+    ## Then the `<name/>` node
     name = LibStrophe.xmpp_stanza_new(ctx)
     LibStrophe.xmpp_stanza_set_name(name, "name")
+    ## We register it as a child of the `<query/>`
     LibStrophe.xmpp_stanza_add_child(query, name)
+    ## And we tell libstrophe that this object is now its own responsibility.
     LibStrophe.xmpp_stanza_release(name)
 
+    ## Then we fill the name node with the correct string
     text = LibStrophe.xmpp_stanza_new(ctx)
     LibStrophe.xmpp_stanza_set_text(text, "LibStrophe example bot")
     LibStrophe.xmpp_stanza_add_child(name, text)
     LibStrophe.xmpp_stanza_release(text)
 
+    ## A similar procedure applies for the version.
     version = LibStrophe.xmpp_stanza_new(ctx)
     LibStrophe.xmpp_stanza_set_name(version, "version")
     LibStrophe.xmpp_stanza_add_child(query, version)
@@ -86,9 +119,11 @@ function version_handler(conn, stanza, userdata)
     LibStrophe.xmpp_stanza_add_child(version, text)
     LibStrophe.xmpp_stanza_release(text)
 
+    ## Finally we register the `<query/>` node as a child of the reply
     LibStrophe.xmpp_stanza_add_child(reply, query)
     LibStrophe.xmpp_stanza_release(query)
 
+    ## and we send it.
     LibStrophe.xmpp_send(conn, reply)
     LibStrophe.xmpp_stanza_release(reply)
     return Int32(1)
@@ -116,14 +151,29 @@ const _quit_handler_c = @cfunction(
 
 
 # ## Message handler
-# We will register a handler that responds to messages here.
+# We will register a handler that responds to messages here. If you are unfamiliar
+# with it, you can check [the relevant section of RFC6121 on messages syntax](https://www.rfc-editor.org/rfc/rfc6121.html#section-5.2).
+#
+# A message stanza typically looks like this:
+# ```xml
+# <message
+#        from='juliet@example.com/balcony'
+#        id='ktx72v49'
+#        to='romeo@example.net'
+#        type='chat'
+#        xml:lang='en'>
+#      <body>Art thou not Romeo, and a Montague?</body>
+# </message>
+# ```
 
 function message_handler(conn, stanza, userdata)
+    ## First we recover the body of the message
     body = LibStrophe.xmpp_stanza_get_child_by_name(stanza, "body")
     body == C_NULL && return 1
     type = LibStrophe.xmpp_stanza_get_type(stanza)
     (type != C_NULL && unsafe_string(type) == "error") && return 1
 
+    ## Then we extract its text
     intext = LibStrophe.xmpp_stanza_get_text(body)
     intext_str = unsafe_string(intext)
     LibStrophe.xmpp_free(ctx, intext)
@@ -165,9 +215,7 @@ function connection_handler(conn, status, error, stream_error, userdata)
         @info "Connected!"
         LibStrophe.xmpp_handler_add(conn, version_handler_c, "jabber:iq:version", "iq", C_NULL, ctx)
         LibStrophe.xmpp_handler_add(conn, message_handler_c, C_NULL, "message", C_NULL, ctx)
-
-        # Send initial <presence/> so that we appear online to contacts
-        pres = LibStrophe.xmpp_presence_new(ctx)
+        pres = LibStrophe.xmpp_presence_new(ctx) # Send initial <presence/> so that we appear online to contacts
         LibStrophe.xmpp_send(conn, pres)
         LibStrophe.xmpp_stanza_release(pres)
     else
@@ -178,6 +226,7 @@ function connection_handler(conn, status, error, stream_error, userdata)
 end
 
 # We need to build a c function to get a pointer that we can use as a callback
+# in C code.
 const connection_handler_c = @cfunction(
     connection_handler, Cvoid, (
         Ptr{LibStrophe.xmpp_conn_t}, LibStrophe.xmpp_conn_event_t,
@@ -194,15 +243,14 @@ const connection_handler_c = @cfunction(
 host = "localhost"
 port = 0 # Will use the default port
 
-# Initialization of the library
+# First, we initialize the library
 LibStrophe.xmpp_initialize()
-# Get the default logger. You can silence outputs by passig `C_NULL`.
+# Then, we get the default logger. You can silence outputs by passig `C_NULL`.
 log = LibStrophe.xmpp_get_default_logger(LibStrophe.XMPP_LEVEL_INFO)
-# Create the libstrophe context.
+# We use it to reate the libstrophe context.
 ctx = LibStrophe.xmpp_ctx_new(C_NULL, log)
 
-# Setting connectionflag is originally handled by the arguments passed to the
-# program. For the sake of simplicity, we set them in stone.
+# We prepare the configuration of the connection through flags
 flags = LibStrophe.XMPP_CONN_FLAG_TRUST_TLS
 jid = "gepetto@localhost"
 password = "plopiplop"
@@ -236,13 +284,11 @@ botty_task = Threads.@spawn begin
         LibStrophe.xmpp_conn_set_jid(conn, jid)
         LibStrophe.xmpp_conn_set_pass(conn, password)
 
-        # set Stream-Mangement state if available
-        if sm_state ≠ C_NULL
+        if sm_state ≠ C_NULL # set Stream-Mangement state if available
             LibStrophe.xmpp_conn_set_sm_state(conn, sm_state)
             sm_state = C_NULL
         end
 
-        # Connection.
         connection_status = LibStrophe.xmpp_connect_client(conn, host, port, connection_handler_c, ctx)
         if connection_status == LibStrophe.XMPP_EOK
             LibStrophe.xmpp_run(ctx) # Run the internal event loop from libstrophe
@@ -250,13 +296,11 @@ botty_task = Threads.@spawn begin
             @warn "Connection to the server failed! Is the server running? Did you register the test users?"
         end
 
-        # If a reconnect was requested.
-        if reconnect
+        if reconnect # If a reconnect was requested.
             sm_state = LibStrophe.xmpp_conn_get_sm_state(conn)
         end
 
-        # Release the current connection
-        LibStrophe.xmpp_conn_release(conn)
+        LibStrophe.xmpp_conn_release(conn) # Release the current connection
     end
 end
 
@@ -274,52 +318,53 @@ LibStrophe.xmpp_shutdown()
 kill(listener)
 readlines(pinocchio)
 
-#= It looks like it works. In addition, we can see the following in our server logs:
+#=
+It looks like it works. In addition, we can see the following in our server logs:
 ```
-prosody-1  | c2s55ad02a2f610     info	Client connected
-prosody-1  | c2s55ad02a2f610     info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
-prosody-1  | c2s55ad02a2f610     info	Authenticated as pinocchio@localhost [prosody:registered]
-prosody-1  | c2s55ad02ae90a0     info	Client connected
-prosody-1  | c2s55ad02ae90a0     info	Stream encrypted (TLSv1.3 with TLS_AES_256_GCM_SHA384)
-prosody-1  | c2s55ad02ae90a0     info	Authenticated as gepetto@localhost [prosody:registered]
-prosody-1  | c2s55ad02a5af00     info	Client connected
-prosody-1  | c2s55ad02a5af00     info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
-prosody-1  | c2s55ad02a5af00     info	Authenticated as pinocchio@localhost [prosody:registered]
-prosody-1  | c2s55ad02a5af00     info	Client disconnected: connection closed
-prosody-1  | c2s55ad02a7e470     info	Client connected
-prosody-1  | c2s55ad02a7e470     info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
-prosody-1  | c2s55ad02a7e470     info	Authenticated as pinocchio@localhost [prosody:registered]
-prosody-1  | c2s55ad02a7e470     info	Client disconnected: connection closed
-prosody-1  | c2s55ad02a4d040     info	Client connected
-prosody-1  | c2s55ad02a4d040     info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
-prosody-1  | c2s55ad02a4d040     info	Authenticated as pinocchio@localhost [prosody:registered]
-prosody-1  | c2s55ad02a4d040     info	Client disconnected: connection closed
-prosody-1  | c2s55ad02a77bf0     info	Client connected
-prosody-1  | c2s55ad02a77bf0     info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
-prosody-1  | c2s55ad02a77bf0     info	Authenticated as pinocchio@localhost [prosody:registered]
-prosody-1  | c2s55ad02a77bf0     info	Client disconnected: connection closed
-prosody-1  | c2s55ad02ae90a0     info	Client disconnected: connection closed
-prosody-1  | c2s55ad02b43970     info	Client connected
-prosody-1  | c2s55ad02b43970     info	Stream encrypted (TLSv1.3 with TLS_AES_256_GCM_SHA384)
-prosody-1  | c2s55ad02b43970     info	Authenticated as gepetto@localhost [prosody:registered]
-prosody-1  | c2s55ad02b97140     info	Client connected
-prosody-1  | c2s55ad02b97140     info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
-prosody-1  | c2s55ad02b97140     info	Authenticated as pinocchio@localhost [prosody:registered]
-prosody-1  | c2s55ad02b97140     info	Client disconnected: connection closed
-prosody-1  | c2s55ad02af3500     info	Client connected
-prosody-1  | c2s55ad02af3500     info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
-prosody-1  | c2s55ad02af3500     info	Authenticated as pinocchio@localhost [prosody:registered]
-prosody-1  | c2s55ad02af3500     info	Client disconnected: connection closed
-prosody-1  | c2s55ad02abe500     info	Client connected
-prosody-1  | c2s55ad02abe500     info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
-prosody-1  | c2s55ad02abe500     info	Authenticated as pinocchio@localhost [prosody:registered]
-prosody-1  | c2s55ad02abe500     info	Client disconnected: connection closed
-prosody-1  | c2s55ad02b5b050     info	Client connected
-prosody-1  | c2s55ad02b5b050     info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
-prosody-1  | c2s55ad02b5b050     info	Authenticated as pinocchio@localhost [prosody:registered]
-prosody-1  | c2s55ad02b5b050     info	Client disconnected: connection closed
-prosody-1  | c2s55ad02b43970     info	Client disconnected: connection closed
-prosody-1  | c2s55ad02a2f610     info	Client disconnected: unexpected eof while reading
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_256_GCM_SHA384)
+info	Authenticated as gepetto@localhost [prosody:registered]
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client disconnected: connection closed
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_256_GCM_SHA384)
+info	Authenticated as gepetto@localhost [prosody:registered]
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client disconnected: connection closed
+info	Client disconnected: unexpected eof while reading
 ```
 
 We see that the listener process for pinocchio connects first, then our bot

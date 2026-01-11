@@ -1,4 +1,4 @@
 return {
-	["user_account_management/remove_deleted_accounts"] = 1768121785;
-	["tokenauth/clear_expired_grants"] = 1768121785;
+	["user_account_management/remove_deleted_accounts"] = 1768751566;
+	["tokenauth/clear_expired_grants"] = 1768751566;
 };

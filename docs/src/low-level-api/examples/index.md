@@ -34,5 +34,5 @@ sudo docker compose exec prosody prosodyctl register gepetto localhost plopiplop
 ## Contents
 
 ```@contents
-Pages = ["basic.md", "bot.md", "roster.md"]
+Pages = ["basic.md", "bot.md"]
 ```
