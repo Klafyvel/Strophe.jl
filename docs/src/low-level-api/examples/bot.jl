@@ -17,10 +17,6 @@ first [the basic example](@ref low-level-basic-example) page.
 =#
 import Strophe: LibStrophe
 
-if Threads.nthreads() < 2
-    error("This example is meant to run on at least two threads. Start julia with the `-t 2` or `-t auto` parameter.")
-end
-
 # ## Boilerplate
 # We want some facilities to listen to our xmpp server. The idea is quite simple:
 # run `go-sendxmpp -n -p plopiplop -u pinocchio@localhost -l` to listen to messages
@@ -37,13 +33,9 @@ listener = run(
 )
 
 # Then, we write a simple function that we will run in parallel of the main
-# thread to send messages to the bot. It sends the message twice: once to ourselves
-# and once to the destination for visual consistency.
+# thread to send messages to the bot.
 
 function say_as_pinocchio(to, msg)
-    io = PipeBuffer()
-    write(io, msg)
-    run(`go-sendxmpp -n -p plopiplop -u pinocchio@localhost pinocchio@localhost`, io, devnull, stderr)
     io = PipeBuffer()
     write(io, msg)
     return run(`go-sendxmpp -n -p plopiplop -u pinocchio@localhost $to`, io, devnull, stderr)
@@ -264,15 +256,19 @@ sm_state = C_NULL
 speaky_task = Threads.@spawn begin
     sleep(1) # Let's wait one second for the bot to connect.
     say_as_pinocchio(jid, "Hello") # Say hello to the bot
+    yield()
     sleep(0.5)
     say_as_pinocchio(jid, "reconnect") # Try the reconnect procedure
+    yield()
     sleep(1)
     say_as_pinocchio(jid, "Hello again")
+    yield()
     sleep(0.5)
     say_as_pinocchio(jid, "quit") # Make the bot quit
 end
 
-# The main loop of the bot. We run it in its own thread.
+# The main loop of the bot. We run it in its own thread, and to allow processing
+# of other tasks, we use [`LibStrophe.xmpp_run_once`](@ref) instead of [`LibStrophe.xmpp_run`](@ref)
 botty_task = Threads.@spawn begin
     while reconnect
         global reconnect
@@ -291,7 +287,10 @@ botty_task = Threads.@spawn begin
 
         connection_status = LibStrophe.xmpp_connect_client(conn, host, port, connection_handler_c, ctx)
         if connection_status == LibStrophe.XMPP_EOK
-            LibStrophe.xmpp_run(ctx) # Run the internal event loop from libstrophe
+            while LibStrophe.xmpp_conn_is_connected(conn) == 1
+                LibStrophe.xmpp_run_once(ctx, 50) # Run the internal event loop from libstrophe
+                yield()
+            end
         else
             @warn "Connection to the server failed! Is the server running? Did you register the test users?"
         end
@@ -304,8 +303,7 @@ botty_task = Threads.@spawn begin
     end
 end
 
-wait(botty_task)
-wait(speaky_task)
+waitall([speaky_task, botty_task])
 
 # After exiting the loop, we release the context and shutdown the library.
 

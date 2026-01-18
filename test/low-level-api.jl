@@ -7,6 +7,7 @@ running the examples from the doc.
 =#
 
 @testsnippet LowLevelAPI begin
+    @info "Starting low level API integration tests"
     using Sockets
 
     function wait_for_port(host, port; timeout = 10.0, interval = 0.5)
@@ -32,10 +33,12 @@ running the examples from the doc.
             ]
         )
     ) "Test connection to XMPP server failed. Start it using the docker-compose.yml file in $(joinpath(pkgdir(Strophe), "scripts")))"
+    @info "Successfully tested Server's connectivity"
     import Strophe: LibStrophe
 end
 
 @testitem "Basic example" tags = [:lowlevel, :integration] setup = [LowLevelAPI] begin
+    @info "Running basic example"
     function connection_handler(conn, status, error, stream_error, userdata)
         ctx = userdata
         if status == LibStrophe.XMPP_CONN_CONNECT # We just connected
@@ -81,16 +84,19 @@ end
     connection_status = LibStrophe.xmpp_connect_client(conn, host, port, connection_handler_c, ctx)
     @test connection_status == LibStrophe.XMPP_EOK
     if connection_status == LibStrophe.XMPP_EOK
+        @info "Connection successful, starting main loop"
         @test_logs (:info, "Connected!") (:info, "Disconnected!") LibStrophe.xmpp_run(ctx) # Run the internal event loop from libstrophe
     else
         @warn "Connection to the server failed! Is the server running? Did you register the test users?"
     end
     LibStrophe.xmpp_conn_release(conn)
     LibStrophe.xmpp_ctx_free(ctx)
+    @info "End of basic example"
 end
 
 @testitem "Bot example" tags = [:lowlevel, :integration] setup = [LowLevelAPI] begin
-    @assert Threads.nthreads() ≥ 2 "The bot example requires at least two threads"
+    @info "Running bot example"
+    # @assert Threads.nthreads() ≥ 2 "The bot example requires at least two threads"
     @assert success(`go-sendxmpp --help`) "The bot example requires `go-sendxmpp` to be installed."
     pinocchio = PipeBuffer()
     listener = run(
@@ -99,10 +105,9 @@ end
             stdin = devnull, stdout = pinocchio, stderr = devnull
         ), wait = false
     )
+    @assert process_running(listener) "The listener process exited. Do the users exist on the server?"
     function say_as_pinocchio(to, msg)
-        io = PipeBuffer()
-        write(io, msg)
-        run(`go-sendxmpp -n -p plopiplop -u pinocchio@localhost pinocchio@localhost`, io, devnull, stderr)
+        @info "Pinocchio says \"$(msg)\""
         io = PipeBuffer()
         write(io, msg)
         return run(`go-sendxmpp -n -p plopiplop -u pinocchio@localhost $to`, io, devnull, stderr)
@@ -124,6 +129,7 @@ end
 
         intext = LibStrophe.xmpp_stanza_get_text(body)
         intext_str = unsafe_string(intext)
+        @info "Message handler received \"$(intext_str)\""
         LibStrophe.xmpp_free(ctx, intext)
 
         reply = LibStrophe.xmpp_stanza_reply(stanza)
@@ -153,6 +159,7 @@ end
     )
     function connection_handler(conn, status, error, stream_error, userdata)
         ctx = userdata
+        @info "Connection handler fired" status LibStrophe.XMPP_CONN_CONNECT
         if status == LibStrophe.XMPP_CONN_CONNECT # We just connected
             LibStrophe.xmpp_handler_add(conn, message_handler_c, C_NULL, "message", C_NULL, ctx)
             pres = LibStrophe.xmpp_presence_new(ctx) # Send initial <presence/> so that we appear online to contacts
@@ -189,14 +196,18 @@ end
     speaky_task = Threads.@spawn begin
         sleep(1) # Let's wait one second for the bot to connect.
         say_as_pinocchio(jid, "Hello") # Say hello to the bot
+        yield()
         sleep(0.5)
         say_as_pinocchio(jid, "reconnect") # Try the reconnect procedure
+        yield()
         sleep(1)
         say_as_pinocchio(jid, "Hello again")
+        yield()
         sleep(0.5)
         say_as_pinocchio(jid, "quit") # Make the bot quit
     end
     botty_task = Threads.@spawn begin
+        @info "Connection successful, starting main loop"
         while reconnect
             global reconnect
             global sm_state
@@ -214,7 +225,10 @@ end
 
             connection_status = LibStrophe.xmpp_connect_client(conn, host, port, connection_handler_c, ctx)
             if connection_status == LibStrophe.XMPP_EOK
-                LibStrophe.xmpp_run(ctx) # Run the internal event loop from libstrophe
+                while LibStrophe.xmpp_conn_is_connected(conn) == 1
+                    LibStrophe.xmpp_run_once(ctx, 50) # Run the internal event loop from libstrophe
+                    yield()
+                end
             else
                 @warn "Connection to the server failed! Is the server running? Did you register the test users?"
             end
@@ -226,9 +240,9 @@ end
             LibStrophe.xmpp_conn_release(conn) # Release the current connection
         end
     end
-
-    wait(botty_task)
-    wait(speaky_task)
+    @assert !istaskfailed(speaky_task) "The speaky_task failed"
+    @assert !istaskfailed(botty_task) "The botty_task failed"
+    waitall([speaky_task, botty_task])
     LibStrophe.xmpp_ctx_free(ctx)
     kill(listener)
     results = readlines(pinocchio)
@@ -245,4 +259,5 @@ end
     for (result, expected_result) in zip(results, expected_results)
         @test endswith(result, expected_result)
     end
+    @info "End of bot example"
 end
