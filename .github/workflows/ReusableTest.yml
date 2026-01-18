@@ -35,14 +35,16 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+      - name: Install go-sendxmpp
+        run: sudo apt install go-sendxmpp
       - name: Start prosody server
-        run: docker-compose -f scripts/docker-compose.yml up -d
+        run: docker compose -f scripts/docker-compose.yml up -d
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ inputs.version }}
           arch: ${{ inputs.arch }}
       - name: Use Julia cache
-        uses: julia-actions/cache@v5
+        uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
       - uses: julia-actions/julia-processcoverage@v1
@@ -54,4 +56,4 @@ jobs:
           token: ${{ secrets.codecov_token }}
       - name: Stop containers
         if: always()
-        run: docker-compose -f scripts/docker-compose.yml down
+        run: docker compose -f scripts/docker-compose.yml down

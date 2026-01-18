@@ -30,11 +30,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
+      - name: Install go-sendxmpp
+        run: sudo apt install go-sendxmpp
+      - name: Start prosody server
+        run: docker compose -f scripts/docker-compose.yml up -d
       - uses: julia-actions/setup-julia@v2
         with:
           version: "1"
       - name: Use Julia cache
-        uses: julia-actions/cache@v5
+        uses: julia-actions/cache@v2
       - name: Instantiate environment with development version of the package
         run: |
           julia --project=docs -e '
@@ -49,9 +53,12 @@ jobs:
             DocMeta.setdocmeta!(Strophe, :DocTestSetup, :(using Strophe); recursive=true)
             doctest(Strophe)'
       - name: Generate and deploy documentation
-        run: julia --project=docs docs/make.jl
+        run: julia --project=docs -t auto docs/make.jl
         env:
           JULIA_PKG_SERVER: ""
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
           GKSwstype: "100" # https://discourse.julialang.org/t/generation-of-documentation-fails-qt-qpa-xcb-could-not-connect-to-display/60988
+      - name: Stop containers
+        if: always()
+        run: docker compose -f scripts/docker-compose.yml down
