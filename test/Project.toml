@@ -9,5 +9,6 @@ TOML = "fa267f1f-6049-4f14-aa54-33bafae1ed76"
 Strophe = {path = ".."}
 
 [compat]
-TestItemRunner = "1.1.4"
 TOML = "1.0.3"
+TestItemRunner = "1.1.4"
+TestItems = "1.0.0"
