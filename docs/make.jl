@@ -92,6 +92,14 @@ function list_pages()
     return pages_list
 end
 
+using Changelog
+Changelog.generate(
+    Changelog.Documenter(),                 # output type
+    joinpath(@__DIR__, "../CHANGELOG.md"),  # input file
+    joinpath(@__DIR__, "src/96-changelog.md"); # output file
+    repo = "klafyvel/Strophe.jl",           # default repository for links
+)
+
 makedocs(;
     modules = [Strophe],
     authors = "klafyvel <hugo@klafyvel.me>",
