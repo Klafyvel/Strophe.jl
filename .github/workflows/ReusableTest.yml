@@ -37,8 +37,14 @@ jobs:
       - uses: actions/checkout@v6
       - name: Install go-sendxmpp
         run: sudo apt install go-sendxmpp
+      - name: Create data/ dir
+        run: mkdir -p scripts/data
       - name: Start prosody server
         run: docker compose -f scripts/docker-compose.yml up -d
+      - name: create user pinocchio
+        run: docker compose exec prosody prosodyctl register pinocchio localhost plopiplop
+      - name: create user gepetto
+        run: docker compose exec prosody prosodyctl register gepetto localhost plopiplop
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ inputs.version }}

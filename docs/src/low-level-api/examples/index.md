@@ -21,7 +21,7 @@ mkdir data
 Then, run prosody:
 
 ```bash
-docker-compose up
+docker compose up
 ```
 
 Finally, in another terminal in the same folder, create two test users.
