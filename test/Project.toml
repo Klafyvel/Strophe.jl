@@ -10,3 +10,4 @@ Strophe = {path = ".."}
 
 [compat]
 TestItemRunner = "1.1.4"
+TOML = "1.0.3"
