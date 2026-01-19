@@ -14,7 +14,7 @@ If this is the first time you work with this repository, follow the instructions
 3. Add this repo as a remote:
 
    ```bash
-   git remote add upstream https://github.com/klafyvel/Strophe.jl
+   git remote add upstream https://github.com/Klafyvel/Strophe.jl
    ```
 
 This will ensure that you have two remotes in your git: `origin` and `upstream`.
@@ -200,7 +200,7 @@ To create a new release, you can follow these simple steps:
   - Add a new link in the bottom for version "x.y.z"
   - Change the "[unreleased]" link to use the latest version - end of line, `vx.y.z ... HEAD`.
 - Create a commit "Release vx.y.z", push, create a PR, wait for it to pass, merge the PR.
-- Go back to main screen and click on the latest commit (link: <https://github.com/klafyvel/Strophe.jl/commit/main>)
+- Go back to main screen and click on the latest commit (link: <https://github.com/Klafyvel/Strophe.jl/commit/main>)
 - At the bottom, write `@JuliaRegistrator register`
 
 After that, you only need to wait and verify:
@@ -208,7 +208,7 @@ After that, you only need to wait and verify:
 - Wait for the bot to comment (should take < 1m) with a link to a PR to the registry
 - Follow the link and wait for a comment on the auto-merge
 - The comment should said all is well and auto-merge should occur shortly
-- After the merge happens, TagBot will trigger and create a new GitHub tag. Check on <https://github.com/klafyvel/Strophe.jl/releases>
+- After the merge happens, TagBot will trigger and create a new GitHub tag. Check on <https://github.com/Klafyvel/Strophe.jl/releases>
 - After the release is create, a "docs" GitHub action will start for the tag.
 - After it passes, a deploy action will run.
 - After that runs, the [stable docs](https://klafyvel.github.io/Strophe.jl/stable) should be updated. Check them and look for the version number.

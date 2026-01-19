@@ -97,16 +97,16 @@ Changelog.generate(
     Changelog.Documenter(),                 # output type
     joinpath(@__DIR__, "../CHANGELOG.md"),  # input file
     joinpath(@__DIR__, "src/96-changelog.md"); # output file
-    repo = "klafyvel/Strophe.jl",           # default repository for links
+    repo = "Klafyvel/Strophe.jl",           # default repository for links
 )
 
 makedocs(;
     modules = [Strophe],
     authors = "klafyvel <hugo@klafyvel.me>",
-    repo = "https://github.com/klafyvel/Strophe.jl/blob/{commit}{path}#{line}",
+    repo = "https://github.com/Klafyvel/Strophe.jl/blob/{commit}{path}#{line}",
     sitename = "Strophe.jl",
     format = Documenter.HTML(; canonical = "https://klafyvel.github.io/Strophe.jl"),
     pages = list_pages(),
 )
 
-deploydocs(; repo = "github.com/klafyvel/Strophe.jl")
+deploydocs(; repo = "github.com/Klafyvel/Strophe.jl")
