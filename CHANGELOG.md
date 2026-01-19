@@ -14,4 +14,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Integration tests for the low-level binfing.
 - CI and pre-commits configuration
 
-[Unreleased]: https://github.com/klafyvel/Strophe.jl/compare/dd89dcd...HEAD
+[Unreleased]: https://github.com/Klafyvel/Strophe.jl/compare/dd89dcd...HEAD
