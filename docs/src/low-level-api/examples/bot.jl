@@ -268,7 +268,7 @@ speaky_task = Threads.@spawn begin
 end
 
 # The main loop of the bot. We run it in its own thread, and to allow processing
-# of other tasks, we use [`LibStrophe.xmpp_run_once`](@ref) instead of [`LibStrophe.xmpp_run`](@ref)
+# of other tasks, we use [`Strophe.LibStrophe.xmpp_run_once`](@ref) instead of [`Strophe.LibStrophe.xmpp_run`](@ref)
 botty_task = Threads.@spawn begin
     while reconnect
         global reconnect

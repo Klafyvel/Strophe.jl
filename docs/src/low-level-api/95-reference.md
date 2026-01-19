@@ -52,7 +52,7 @@ Strophe.LibStrophe.xmpp_log_handler
 
 These functions manage a connection object.
 
-A part of those functions is listed under the [SSL/TLS specific functionality](@ref SSL) section.
+A part of those functions is listed under the [SSL/TLS specific functionality](@ref low-level-SSL) section.
 
 ```@docs
 Strophe.LibStrophe.xmpp_sockopt_callback
@@ -90,9 +90,59 @@ Strophe.LibStrophe.xmpp_conn_send_queue_drop_element
 Strophe.LibStrophe.xmpp_queue_element_t
 Strophe.LibStrophe.xmpp_sockopt_cb_keepalive
 Strophe.LibStrophe.xmpp_conn_t
+Strophe.LibStrophe.xmpp_sm_callback
+Strophe.LibStrophe.xmpp_conn_set_sm_callback
+Strophe.LibStrophe.xmpp_conn_restore_sm_state
 ```
 
-## [SSL/TLS specific functionality](@id SSL)
+## [SSL/TLS specific functionality](@id low-level-SSL)
+
+These functions provide SSL/TLS specific functionality.
+
+```@docs
+Strophe.LibStrophe.xmpp_certfail_handler
+Strophe.LibStrophe.xmpp_password_callback
+Strophe.LibStrophe.xmpp_cert_element_t
+Strophe.LibStrophe.xmpp_conn_set_certfail_handler
+Strophe.LibStrophe.xmpp_conn_set_cafile
+Strophe.LibStrophe.xmpp_conn_set_capath
+Strophe.LibStrophe.xmpp_conn_get_peer_cert
+Strophe.LibStrophe.xmpp_conn_set_password_callback
+Strophe.LibStrophe.xmpp_conn_set_password_retries
+Strophe.LibStrophe.xmpp_conn_get_keyfile
+Strophe.LibStrophe.xmpp_conn_set_client_cert
+Strophe.LibStrophe.xmpp_conn_cert_xmppaddr_num
+Strophe.LibStrophe.xmpp_conn_cert_xmppaddr
+Strophe.LibStrophe.xmpp_tlscert_get_ctx
+Strophe.LibStrophe.xmpp_tlscert_get_conn
+Strophe.LibStrophe.xmpp_tlscert_get_pem
+Strophe.LibStrophe.xmpp_tlscert_get_dnsname
+Strophe.LibStrophe.xmpp_tlscert_get_string
+Strophe.LibStrophe.xmpp_tlscert_get_description
+Strophe.LibStrophe.xmpp_tlscert_free
+```
+
+## [Event loop](@id low-level-event-loop)
+
+These functions manage the Strophe event loop.
+
+Simple tools can use [`Strophe.LibStrophe.xmpp_run`](@ref) and [`Strophe.LibStrophe.xmpp_stop`](@ref) to manage the
+life cycle of the program. A common idiom is to set up a few initial event
+handers, call [`Strophe.LibStrophe.xmpp_run`](@ref), and then respond and react to events as they
+come in. At some point, one of the handlers will call [`Strophe.LibStrophe.xmpp_stop`](@ref) to
+quit the event loop which leads to the program terminating.
+
+More complex programs will have their own event loops, and should ensure that
+[`Strophe.LibStrophe.xmpp_run_once`](@ref) is called regularly from there. For example, a GUI
+program will already include an event loop to process UI events from users,
+and [`Strophe.LibStrophe.xmpp_run_once`](@ref) would be called from an idle function.
+
+```@docs
+Strophe.LibStrophe.xmpp_run_once
+Strophe.LibStrophe.xmpp_run
+Strophe.LibStrophe.xmpp_stop
+Strophe.LibStrophe.xmpp_ctx_set_timeout
+```
 
 ## [Stanza](@id low-level-stanza)
 
@@ -159,19 +209,50 @@ Strophe.LibStrophe.xmpp_timed_handler
 Strophe.LibStrophe.xmpp_global_timed_handler
 ```
 
+## JID creation and parsing
+
+!!! warning
+    The return value of these functions need to be freed using [`Strophe.LibStrophe.xmpp_free`](@ref)
+
+```@docs
+Strophe.LibStrophe.xmpp_jid_new
+Strophe.LibStrophe.xmpp_jid_bare
+Strophe.LibStrophe.xmpp_jid_node
+Strophe.LibStrophe.xmpp_jid_domain
+Strophe.LibStrophe.xmpp_jid_resource
+```
+
 ## Pseudo-random number generator
 
 ```@docs
-Strophe.LibStrophe.xmpp_sm_callback
-Strophe.LibStrophe.xmpp_password_callback
-Strophe.LibStrophe.xmpp_certfail_handler
 Strophe.LibStrophe.xmpp_rand_new
-Strophe.LibStrophe.xmpp_rand_nonce
-Strophe.LibStrophe.xmpp_cert_element_t
 Strophe.LibStrophe.xmpp_rand_free
 Strophe.LibStrophe.xmpp_rand
 Strophe.LibStrophe.xmpp_rand_bytes
+Strophe.LibStrophe.xmpp_rand_nonce
 Strophe.LibStrophe.xmpp_rand_t
+```
+
+## Message digests
+
+```@docs
+Strophe.LibStrophe.xmpp_sha1
+Strophe.LibStrophe.xmpp_sha1_digest
+Strophe.LibStrophe.xmpp_sha1_new
+Strophe.LibStrophe.xmpp_sha1_free
+Strophe.LibStrophe.xmpp_sha1_update
+Strophe.LibStrophe.xmpp_sha1_final
+Strophe.LibStrophe.xmpp_sha1_to_string
+Strophe.LibStrophe.xmpp_sha1_to_string_alloc
+Strophe.LibStrophe.xmpp_sha1_to_digest
+```
+
+## Encodings
+
+```@docs
+Strophe.LibStrophe.xmpp_base64_encode
+Strophe.LibStrophe.xmpp_base64_decode_str
+Strophe.LibStrophe.xmpp_base64_decode_bin
 ```
 
 ## Constants

@@ -221,7 +221,18 @@ end
 
 Certificate Elements
 
-` TLS`
+Members:
+* `XMPP_CERT_VERSION`: X.509 Version.
+* `XMPP_CERT_SERIALNUMBER`: SerialNumber.
+* `XMPP_CERT_SUBJECT`: Subject.
+* `XMPP_CERT_ISSUER`: Issuer.
+* `XMPP_CERT_NOTBEFORE`: Issued on.
+* `XMPP_CERT_NOTAFTER`: Expires on.
+* `XMPP_CERT_KEYALG`: Public Key Algorithm.
+* `XMPP_CERT_SIGALG`: Certificate Signature Algorithm.
+* `XMPP_CERT_FINGERPRINT_SHA1`: Fingerprint SHA-1.
+* `XMPP_CERT_FINGERPRINT_SHA256`: Fingerprint SHA-256.
+* `XMPP_CERT_ELEMENT_MAX`: Last element of the enum.
 """
 @enum xmpp_cert_element_t::UInt32 begin
     XMPP_CERT_VERSION = 0
@@ -260,13 +271,13 @@ When this function is called and details of the `cert` have to be kept, please c
 
 NB: `errormsg` is specific per certificate on OpenSSL and the same for all certificates on GnuTLS.
 
-` TLS`
 
-# Arguments
+
+Parameters
 * `cert`: a Strophe certificate object
 * `errormsg`: The error that caused this.
-# Returns
-0 if the connection attempt should be terminated, 1 if the connection should be established.
+
+Returns 0 if the connection attempt should be terminated, 1 if the connection should be established.
 """
 const xmpp_certfail_handler = Ptr{Cvoid}
 
@@ -278,25 +289,26 @@ When this callback is called it shall write a NULL-terminated string of maximum 
 
 This is currently only supported for GnuTLS and OpenSSL.
 
-On 2022-02-02 the following maximum lengths are valid: ``` include/gnutls/pkcs11.h: #define GNUTLS\\_PKCS11\\_MAX\\_PIN\\_LEN 256 include/openssl/pem.h: #define PEM\\_BUFSIZE 1024 ```
+On 2022-02-02 the following maximum lengths are valid:
+```
+include/gnutls/pkcs11.h:
+#define GNUTLS\\_PKCS11\\_MAX\\_PIN\\_LEN 256
+include/openssl/pem.h:
+#define PEM\\_BUFSIZE 1024
+```
 
 We expect the buffer to be NULL-terminated, therefore the usable lengths are:
 
 * 255 for GnuTLS * 1023 for OpenSSL
 
-Useful API's inside this callback are e.g.
+Useful API's inside this callback are e.g. [`xmpp_conn_get_keyfile`](@ref)
 
-xmpp_conn_get_keyfile
-
-` TLS`
-
-# Arguments
+Parameters
 * `pw`: The buffer where the password shall be stored.
 * `pw_max`: The maximum length of the password.
 * `conn`: The Strophe connection object this callback originates from.
 * `userdata`: The userdata pointer as supplied when setting this callback.
-# Returns
--1 on error, else the number of bytes written to `pw` w/o terminating NUL byte
+Returns -1 on error, else the number of bytes written to `pw` w/o terminating NUL byte
 """
 const xmpp_password_callback = Ptr{Cvoid}
 
@@ -483,42 +495,151 @@ function xmpp_conn_set_jid(conn, jid)
     return ccall((:xmpp_conn_set_jid, libstrophe), Cvoid, (Ptr{xmpp_conn_t}, Ptr{Cchar}), conn, jid)
 end
 
+"""
+$(SIGNATURES)
+
+Set the CAfile.
+
+Parameters:
+* `conn` a Strophe connection object
+* `path` path to a certificate file
+"""
 function xmpp_conn_set_cafile(conn, path)
     return ccall((:xmpp_conn_set_cafile, libstrophe), Cvoid, (Ptr{xmpp_conn_t}, Ptr{Cchar}), conn, path)
 end
 
+"""
+$(SIGNATURES)
+
+Set the CApath.
+
+Parameters:
+* `conn` a Strophe connection object
+* `path` path to a folder containing certificates
+"""
 function xmpp_conn_set_capath(conn, path)
     return ccall((:xmpp_conn_set_capath, libstrophe), Cvoid, (Ptr{xmpp_conn_t}, Ptr{Cchar}), conn, path)
 end
 
+"""
+$(SIGNATURES)
+
+Set the Handler function which will be called when the TLS stack can't verify the CA of the server we're trying to connect to.
+
+Parameters:
+* `conn` a Strophe connection object
+* `hndl` certfail Handler function
+"""
 function xmpp_conn_set_certfail_handler(conn, hndl)
     return ccall((:xmpp_conn_set_certfail_handler, libstrophe), Cvoid, (Ptr{xmpp_conn_t}, xmpp_certfail_handler), conn, hndl)
 end
 
+"""
+$(SIGNATURES)
+
+Retrieve the peer certificate.
+
+The returned Certificate object must be free'd by calling [`xmpp_tlscert_free`](@ref)
+
+Parameters:
+* `conn` a Strophe connection object
+
+Returns a Strophe Certificate object
+"""
 function xmpp_conn_get_peer_cert(conn)
     return ccall((:xmpp_conn_get_peer_cert, libstrophe), Ptr{xmpp_tlscert_t}, (Ptr{xmpp_conn_t},), conn)
 end
 
+"""
+$(SIGNATURES)
+
+Set the Callback function which will be called when the TLS stack can't decrypt a password protected key file.
+
+Parameters:
+* `conn` a Strophe connection object
+* `cb` The callback function that shall be called
+* `userdata` An opaque data pointer that will be passed to the callback
+"""
 function xmpp_conn_set_password_callback(conn, cb, userdata)
     return ccall((:xmpp_conn_set_password_callback, libstrophe), Cvoid, (Ptr{xmpp_conn_t}, xmpp_password_callback, Ptr{Cvoid}), conn, cb, userdata)
 end
 
+"""
+$(SIGNATURES)
+
+Set the number of retry attempts to decrypt a private key file.
+
+In case the user enters the password manually it can be useful to directly retry if the decryption of the key file failed.
+
+Parameters:
+* `conn` a Strophe connection object
+* `retires` The number of retries that should be tried
+"""
 function xmpp_conn_set_password_retries(conn, retries)
     return ccall((:xmpp_conn_set_password_retries, libstrophe), Cvoid, (Ptr{xmpp_conn_t}, Cuint), conn, retries)
 end
 
+"""
+$(SIGNATURES)
+
+Retrieve the path of the key file that shall be unlocked.
+
+This makes usually sense to be called from the [`xmpp_password_callback`](@ref).
+
+Parameters:
+* `conn` a Strophe connection object
+
+Returns a String of the path to the key file
+"""
 function xmpp_conn_get_keyfile(conn)
     return ccall((:xmpp_conn_get_keyfile, libstrophe), Ptr{Cchar}, (Ptr{xmpp_conn_t},), conn)
 end
 
+"""
+$(SIGNATURES)
+
+Set the Client Certificate and Private Key or PKCS#12 encoded file that will be bound to the connection.
+
+If any of them was previously set, it will be discarded. This should not be used after a connection is created. The function will make a copy of the strings passed in.
+
+In case the Private Key is encrypted, a callback must be set via [`xmpp_conn_set_password_callback`](@ref) so the TLS stack can retrieve the password.
+
+In case one wants to use a PKCS#12 encoded file, it should be passed via the cert parameter and key should be `C_NULL`. Passing a PKCS#12 file in key is deprecated.
+
+Parameters:
+* `conn` a Strophe connection object
+* `cert` path to a certificate file or a P12 file
+* `key` path to a private key file or a P12 file
+"""
 function xmpp_conn_set_client_cert(conn, cert, key)
     return ccall((:xmpp_conn_set_client_cert, libstrophe), Cvoid, (Ptr{xmpp_conn_t}, Ptr{Cchar}, Ptr{Cchar}), conn, cert, key)
 end
 
+"""
+$(SIGNATURES)
+
+Get the number of xmppAddr entries in the client certificate.
+
+Parameters:
+* `conn` a Strophe connection object
+
+Returns the number of xmppAddr entries in the client certificate
+"""
 function xmpp_conn_cert_xmppaddr_num(conn)
     return ccall((:xmpp_conn_cert_xmppaddr_num, libstrophe), Cuint, (Ptr{xmpp_conn_t},), conn)
 end
 
+"""
+$(SIGNATURES)
+
+Get a specific xmppAddr entry.
+
+Parameters:
+* `conn` a Strophe connection object
+* `n` the index of the entry, starting at 0
+
+Returns a string containing the xmppAddr or `C_NULL` if n is out of range
+"""
 function xmpp_conn_cert_xmppaddr(conn, n)
     return ccall((:xmpp_conn_cert_xmppaddr, libstrophe), Ptr{Cchar}, (Ptr{xmpp_conn_t}, Cuint), conn, n)
 end
@@ -722,21 +843,50 @@ The function which will be called when Strophe updates its internal SM state.
 
 Please note that you have to create a copy of the buffer, since the library will free the buffer right after return of the callback function.
 
-` Connections`
-
 Parameters
 * `conn`: The Strophe connection object this callback originates from.
-* `ctx`: The `ctx` pointer as passed to xmpp_conn_set_sm_callback
+* `ctx`: The `ctx` pointer as passed to [`xmpp_conn_set_sm_callback`](@ref)
 * `sm_state`: A pointer to a buffer containing the serialized SM state.
 * `sm_state_len`: The length of `sm_state`.
 Returns 0 on success, -1 on error
 """
 const xmpp_sm_callback = Ptr{Cvoid}
 
+"""
+This sets the Stream Management callback function
+
+After setting this API, the library will call the given callback function
+each time when the internal SM state is updated.
+
+This can be used in conjunction with [`xmpp_conn_restore_sm_state`](@ref) to
+e.g. implement a mechanism that retains an SM state over potential
+application terminations.
+
+Parameters
+* `conn`: The Strophe connection object this callback originates from.
+* `cb`: a callback function or `C_NULL` to disable
+* `ctx`: The `ctx` pointer as passed on invocation of the callback function
+"""
 function xmpp_conn_set_sm_callback(conn, cb, ctx)
     return ccall((:xmpp_conn_set_sm_callback, libstrophe), Cvoid, (Ptr{xmpp_conn_t}, xmpp_sm_callback, Ptr{Cvoid}), conn, cb, ctx)
 end
 
+"""
+This restores the serialized Stream Management state
+
+After setting this API, the library will call the given callback function
+each time when the internal SM state is updated.
+
+This can be used in conjunction with [`xmpp_conn_set_sm_state`](@ref) to
+e.g. implement a mechanism that retains an SM state over potential
+application terminations.
+
+Parameters
+* `conn`: The Strophe connection object this callback originates from.
+* `sm_state`: a buffer as passed to the SM callback
+* `sm_state_len`: the length of `sm_state`
+Returns 0 on success, -1 on error
+"""
 function xmpp_conn_restore_sm_state(conn, sm_state, sm_state_len)
     return ccall((:xmpp_conn_restore_sm_state, libstrophe), Cint, (Ptr{xmpp_conn_t}, Ptr{Cuchar}, Csize_t), conn, sm_state, sm_state_len)
 end
@@ -1897,66 +2047,245 @@ function xmpp_error_new(ctx, type, text)
     return ccall((:xmpp_error_new, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_ctx_t}, xmpp_error_type_t, Ptr{Cchar}), ctx, type, text)
 end
 
+"""
+$(SIGNATURES)
+
+Create a JID string from component parts node, domain, and resource.
+
+Parameters:
+* `ctx` a Strophe context object
+* `node` a string representing the node
+* `domain` a string representing the domain.  Required.
+* `resource` a string representing the resource
+
+Returns an allocated string with the full JID or `C_NULL` if no domain is specified
+"""
 function xmpp_jid_new(ctx, node, domain, resource)
     return ccall((:xmpp_jid_new, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cchar}, Ptr{Cchar}, Ptr{Cchar}), ctx, node, domain, resource)
 end
 
+"""
+$(SIGNATURES)
+
+Create a bare JID from a JID.
+
+Parameters:
+* `ctx` a Strophe context object
+* `jid` the JID
+
+Returns an allocated string with the bare JID or `C_NULL` on an error
+"""
 function xmpp_jid_bare(ctx, jid)
     return ccall((:xmpp_jid_bare, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cchar}), ctx, jid)
 end
 
+"""
+$(SIGNATURES)
+
+Create a node string from a JID.
+
+Parameters:
+* `ctx` a Strophe context object
+* `jid` the JID
+
+Returns an allocated string with the node JID or `C_NULL` on an error
+"""
 function xmpp_jid_node(ctx, jid)
     return ccall((:xmpp_jid_node, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cchar}), ctx, jid)
 end
 
+"""
+$(SIGNATURES)
+
+Create a domain string from a JID.
+
+Parameters:
+* `ctx` a Strophe context object
+* `jid` the JID
+
+Returns an allocated string with the domain or `C_NULL` on an error
+"""
 function xmpp_jid_domain(ctx, jid)
     return ccall((:xmpp_jid_domain, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cchar}), ctx, jid)
 end
 
+"""
+$(SIGNATURES)
+
+Create a resource string from a JID.
+
+Parameters:
+* `ctx` a Strophe context object
+* `jid` the JID
+
+Returns an allocated string with the resource or `C_NULL` if no resource is found or an error occurs
+"""
 function xmpp_jid_resource(ctx, jid)
     return ccall((:xmpp_jid_resource, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cchar}), ctx, jid)
 end
 
+"""
+$(SIGNATURES)
+
+Run the event loop once.
+
+This function will run send any data that has been queued by xmpp_send and
+related functions and run through the Strophe even loop a single time, and
+will not wait more than timeout milliseconds for events. This is provided to
+support integration with event loops outside the library, and if used, should
+be called regularly to achieve low latency event handling.
+
+Parameters:
+* `ctx` a Strophe context object
+* `timeout` time to wait for events in milliseconds
+"""
 function xmpp_run_once(ctx, timeout)
     return ccall((:xmpp_run_once, libstrophe), Cvoid, (Ptr{xmpp_ctx_t}, Culong), ctx, timeout)
 end
 
+"""
+$(SIGNATURES)
+
+Start the event loop.
+
+This function continuously calls [`xmpp_run_once`](@ref) and does not return
+until xmpp_stop has been called.
+
+Parameters:
+* `ctx` a Strophe context object
+"""
 function xmpp_run(ctx)
     return ccall((:xmpp_run, libstrophe), Cvoid, (Ptr{xmpp_ctx_t},), ctx)
 end
 
+"""
+$(SIGNATURES)
+
+Stop the event loop.
+
+This will stop the event loop after the current iteration and cause
+[`xmpp_run`](@ref) to exit.
+
+Parameters:
+* `ctx` a Strophe context object
+"""
 function xmpp_stop(ctx)
     return ccall((:xmpp_stop, libstrophe), Cvoid, (Ptr{xmpp_ctx_t},), ctx)
 end
 
+"""
+$(SIGNATURES)
+
+Set the timeout to use when calling [`xmpp_run`](@ref).
+
+Parameters:
+* `ctx` a Strophe context object
+* `timeout` the time to wait for events in milliseconds
+"""
 function xmpp_ctx_set_timeout(ctx, timeout)
     return ccall((:xmpp_ctx_set_timeout, libstrophe), Cvoid, (Ptr{xmpp_ctx_t}, Culong), ctx, timeout)
 end
 
+"""
+$(SIGNATURES)
+
+Get the Strophe context which is assigned to this certificate.
+
+Parameters:
+* `cert` a Strophe TLS certificate object
+
+Returns the Strophe context object where this certificate originates from
+"""
 function xmpp_tlscert_get_ctx(cert)
     return ccall((:xmpp_tlscert_get_ctx, libstrophe), Ptr{xmpp_ctx_t}, (Ptr{xmpp_tlscert_t},), cert)
 end
 
+"""
+$(SIGNATURES)
+
+Get the Strophe connection which is assigned to this certificate.
+
+Parameters:
+* `cert` a Strophe TLS certificate object
+
+Returns the Strophe connection object where this certificate originates from
+"""
 function xmpp_tlscert_get_conn(cert)
     return ccall((:xmpp_tlscert_get_conn, libstrophe), Ptr{xmpp_conn_t}, (Ptr{xmpp_tlscert_t},), cert)
 end
 
+"""
+$(SIGNATURES)
+
+Get the complete PEM of this certificate.
+
+Parameters:
+* `cert` a Strophe TLS certificate object
+
+Returns a string containing the PEM of this certificate
+"""
 function xmpp_tlscert_get_pem(cert)
     return ccall((:xmpp_tlscert_get_pem, libstrophe), Ptr{Cchar}, (Ptr{xmpp_tlscert_t},), cert)
 end
 
+"""
+$(SIGNATURES)
+
+Get the dnsName entries out of the SubjectAlternativeNames.
+
+Note: Max. MAX_NUM_DNSNAMES are supported.
+
+Parameters:
+* `cert` a Strophe TLS certificate object
+* `n` which dnsName entry
+
+Returns a string with the n'th dnsName
+"""
 function xmpp_tlscert_get_dnsname(cert, n)
     return ccall((:xmpp_tlscert_get_dnsname, libstrophe), Ptr{Cchar}, (Ptr{xmpp_tlscert_t}, Csize_t), cert, n)
 end
 
+"""
+$(SIGNATURES)
+
+Get various parts of the certificate as String.
+
+c.f. [`xmpp_cert_element_t`](@ref) for details.
+
+Parameters:
+* `cert` a Strophe TLS certificate object
+* `elmnt` which part of the certificate
+
+Returns a string with the part of the certificate
+"""
 function xmpp_tlscert_get_string(cert, elmnt)
     return ccall((:xmpp_tlscert_get_string, libstrophe), Ptr{Cchar}, (Ptr{xmpp_tlscert_t}, xmpp_cert_element_t), cert, elmnt)
 end
 
+"""
+$(SIGNATURES)
+
+Get a descriptive string for each xmpp_cert_element_t.
+
+c.f. [`xmpp_cert_element_t`](@ref) for details.
+
+Parameters:
+* `elmnt` which part of the certificate
+
+Returns a string with the description
+"""
 function xmpp_tlscert_get_description(elmnt)
     return ccall((:xmpp_tlscert_get_description, libstrophe), Ptr{Cchar}, (xmpp_cert_element_t,), elmnt)
 end
 
+"""
+$(SIGNATURES)
+
+Free a certificate object.
+
+Parameters:
+* `cert` a Strophe TLS certificate object
+"""
 function xmpp_tlscert_free(cert)
     return ccall((:xmpp_tlscert_free, libstrophe), Cvoid, (Ptr{xmpp_tlscert_t},), cert)
 end
@@ -1969,50 +2298,207 @@ mutable struct _xmpp_sha1_t end
 
 const xmpp_sha1_t = _xmpp_sha1_t
 
+"""
+$(SIGNATURES)
+
+Compute SHA1 message digest.
+
+Returns an allocated string which represents SHA1 message digest in hexadecimal notation. The string must be freed with [`xmpp_free`](@ref).
+
+Parameters:
+* `ctx` a Strophe context object
+* `data` buffer for digest computation
+* `len` size of the data buffer
+
+Returns an allocated string or `C_NULL` on allocation error
+"""
 function xmpp_sha1(ctx, data, len)
     return ccall((:xmpp_sha1, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cuchar}, Csize_t), ctx, data, len)
 end
 
+"""
+$(SIGNATURES)
+
+Compute SHA1 message digest.
+
+Stores digest in user's buffer which must be at least XMPP_SHA1_DIGEST_SIZE bytes long.
+
+Parameters:
+* `data` buffer for digest computation
+* `len` size of the data buffer
+* `digest` output buffer of XMPP_SHA1_DIGEST_SIZE bytes
+"""
 function xmpp_sha1_digest(data, len, digest)
     return ccall((:xmpp_sha1_digest, libstrophe), Cvoid, (Ptr{Cuchar}, Csize_t, Ptr{Cuchar}), data, len, digest)
 end
 
+"""
+$(SIGNATURES)
+
+Create new SHA1 object.
+
+SHA1 object is used to compute SHA1 digest of a buffer that is split in multiple chunks or provided in stream mode. A single buffer can be processed by short functions [`xmpp_sha1`](@ref) and [`xmpp_sha1_digest`](@ref). Follow the next use-case for xmpp_sha1_t object:
+
+```julia
+sha1 = LibStrophe.xmpp_sha1_new(ctx)
+# Repeat update for all chunks of data
+LibStrophe.xmpp_sha1_update(sha1, data, len)
+LibStrophe.xmpp_sha1_final(sha1)
+digest = LibStrophe.xmpp_sha1_to_string_alloc(sha1)
+xmpp_sha1_free(sha1)
+```
+
+Parameters:
+* `ctx` a Strophe context object
+
+Returns new SHA1 object
+"""
 function xmpp_sha1_new(ctx)
     return ccall((:xmpp_sha1_new, libstrophe), Ptr{xmpp_sha1_t}, (Ptr{xmpp_ctx_t},), ctx)
 end
 
+"""
+$(SIGNATURES)
+
+Destroy SHA1 object.
+
+Parameters:
+* `sha1` a SHA1 object
+"""
 function xmpp_sha1_free(sha1)
     return ccall((:xmpp_sha1_free, libstrophe), Cvoid, (Ptr{xmpp_sha1_t},), sha1)
 end
 
+"""
+$(SIGNATURES)
+
+Update SHA1 context with the next portion of data.
+
+Can be called repeatedly.
+
+Parameters:
+* `sha1` a SHA1 object
+* `data` pointer to a buffer to be hashed
+* `len` size of the data buffer
+"""
 function xmpp_sha1_update(sha1, data, len)
     return ccall((:xmpp_sha1_update, libstrophe), Cvoid, (Ptr{xmpp_sha1_t}, Ptr{Cuchar}, Csize_t), sha1, data, len)
 end
 
+"""
+$(SIGNATURES)
+
+Finish SHA1 computation.
+
+Don't call [`xmpp_sha1_update`](@ref) after this function. Retrieve resulting message digest with [`xmpp_sha1_to_string`](@ref) or [`xmpp_sha1_to_digest`](@ref).
+
+Parameters:
+* `sha1` a SHA1 object
+"""
 function xmpp_sha1_final(sha1)
     return ccall((:xmpp_sha1_final, libstrophe), Cvoid, (Ptr{xmpp_sha1_t},), sha1)
 end
 
+"""
+$(SIGNATURES)
+
+Return message digest rendered as a string.
+
+Stores the string to a user's buffer and returns the buffer. Call this function after [`xmpp_sha1_final`](@ref).
+
+Parameters:
+* `sha1` a SHA1 object
+* `s` output string
+* `slen` size reserved for the string including '\0'
+
+Returns pointer `s` or `C_NULL` if resulting string is bigger than slen bytes
+"""
 function xmpp_sha1_to_string(sha1, s, slen)
     return ccall((:xmpp_sha1_to_string, libstrophe), Ptr{Cchar}, (Ptr{xmpp_sha1_t}, Ptr{Cchar}, Csize_t), sha1, s, slen)
 end
 
+"""
+$(SIGNATURES)
+
+Return message digest rendered as a string.
+
+Returns an allocated string. Free the string by calling [`xmpp_free`](@ref) using the Strophe context which is passed to [`xmpp_sha1_new`](@ref). Call this function after [`xmpp_sha1_final`](@ref).
+
+Parameters:
+* `sha1` a SHA1 object
+
+Returns an allocated string
+"""
 function xmpp_sha1_to_string_alloc(sha1)
     return ccall((:xmpp_sha1_to_string_alloc, libstrophe), Ptr{Cchar}, (Ptr{xmpp_sha1_t},), sha1)
 end
 
+"""
+$(SIGNATURES)
+
+Stores message digest to a user's buffer.
+
+Parameters:
+* `sha1` a SHA1 object
+* `digest` output buffer of `XMPP_SHA1_DIGEST_SIZE` bytes
+"""
 function xmpp_sha1_to_digest(sha1, digest)
     return ccall((:xmpp_sha1_to_digest, libstrophe), Cvoid, (Ptr{xmpp_sha1_t}, Ptr{Cuchar}), sha1, digest)
 end
 
+"""
+$(SIGNATURES)
+
+Base64 encoding routine.
+
+Returns an allocated string which must be freed with [`xmpp_free`](@ref).
+
+Parameters:
+* `ctx` a Strophe context object
+* `data` buffer to encode
+* `len` size of the data buffer
+
+Returns an allocated null-terminated string or `C_NULL` on error
+"""
 function xmpp_base64_encode(ctx, data, len)
     return ccall((:xmpp_base64_encode, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cuchar}, Csize_t), ctx, data, len)
 end
 
+"""
+$(SIGNATURES)
+
+Base64 decoding routine.
+
+Returns an allocated string which must be freed with [`xmpp_free`](@ref). User calls this function when the result must be a string. When decoded buffer contains '\0' NULL is returned.
+
+Parameters:
+* `ctx` a Strophe context object
+* `base64` encoded buffer
+* `len` size of the buffer
+
+Returns an allocated null-terminated string or `C_NULL` on error
+"""
 function xmpp_base64_decode_str(ctx, base64, len)
     return ccall((:xmpp_base64_decode_str, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cchar}, Csize_t), ctx, base64, len)
 end
 
+"""
+$(SIGNATURES)
+
+Base64 decoding routine.
+
+Returns an allocated buffer which must be freed with [`xmpp_free`](@ref).
+
+Parameters:
+* `ctx` a Strophe context object
+* `base64` encoded buffer
+* `len` size of the encoded buffer
+* `out` allocated buffer is stored here
+* `outlen` size of the allocated buffer
+
+!!! note
+    on an error the `out` pointer will be `C_NULL`
+"""
 function xmpp_base64_decode_bin(ctx, base64, len, out, outlen)
     return ccall((:xmpp_base64_decode_bin, libstrophe), Cvoid, (Ptr{xmpp_ctx_t}, Ptr{Cchar}, Csize_t, Ptr{Ptr{Cuchar}}, Ptr{Csize_t}), ctx, base64, len, out, outlen)
 end
@@ -2020,7 +2506,7 @@ end
 mutable struct _xmpp_rand_t end
 
 """
-.
+Random number generator
 """
 const xmpp_rand_t = _xmpp_rand_t
 
@@ -2029,9 +2515,7 @@ const xmpp_rand_t = _xmpp_rand_t
 
 Create new [`xmpp_rand_t`](@ref) object.
 
-` Random`
-
-# Arguments
+Parameters:
 * `ctx`: A Strophe context object
 """
 function xmpp_rand_new(ctx)
@@ -2043,9 +2527,7 @@ end
 
 Destroy an [`xmpp_rand_t`](@ref) object.
 
-` Random`
-
-# Arguments
+Parameters
 * `ctx`: A Strophe context object
 * `rand`: A [`xmpp_rand_t`](@ref) object
 """
@@ -2058,7 +2540,6 @@ end
 
 Generate random integer. Analogue of rand(3).
 
-` Random`
 """
 function xmpp_rand(rand)
     return ccall((:xmpp_rand, libstrophe), Cint, (Ptr{xmpp_rand_t},), rand)
@@ -2069,9 +2550,7 @@ end
 
 Generate random bytes. Generates len bytes and stores them to the output buffer.
 
-` Random`
-
-# Arguments
+Parameters:
 * `rand`: A [`xmpp_rand_t`](@ref) object
 * `output`: A buffer where a len random bytes will be placed.
 * `len`: Number of bytes reserved for the output..
@@ -2085,9 +2564,7 @@ end
 
 Generate a nonce that is printable randomized string. This function doesn't allocate memory and doesn't fail.
 
-` Random`
-
-# Arguments
+Parameters:
 * `rand`: A [`xmpp_rand_t`](@ref) object
 * `output`: A buffer where a NULL-terminated string will be placed. The string will contain len-1 printable symbols.
 * `len`: Number of bytes reserved for the output string, including end of line '\\0'.
