@@ -10,3 +10,7 @@ coverage
 docs/build/
 env
 node_modules
+scripts/data/*
+**/examples/*.md
+!*/examples/index.md
+docs/src/96-changelog.md

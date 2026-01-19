@@ -26,6 +26,8 @@ on:
     secrets:
       codecov_token:
         required: true
+env:
+  JULIA_NUM_THREADS: auto
 
 jobs:
   test:
@@ -35,12 +37,22 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+      - name: Install go-sendxmpp
+        run: sudo apt install go-sendxmpp
+      - name: Create data/ dir
+        run: mkdir -p scripts/data
+      - name: Start prosody server
+        run: docker compose -f scripts/docker-compose.yml up -d
+      - name: create user pinocchio
+        run: docker compose -f scripts/docker-compose.yml exec prosody prosodyctl register pinocchio localhost plopiplop
+      - name: create user gepetto
+        run: docker compose -f scripts/docker-compose.yml exec prosody prosodyctl register gepetto localhost plopiplop
       - uses: julia-actions/setup-julia@v2
         with:
           version: ${{ inputs.version }}
           arch: ${{ inputs.arch }}
       - name: Use Julia cache
-        uses: julia-actions/cache@v5
+        uses: julia-actions/cache@v2
       - uses: julia-actions/julia-buildpkg@v1
       - uses: julia-actions/julia-runtest@v1
       - uses: julia-actions/julia-processcoverage@v1
@@ -50,3 +62,6 @@ jobs:
         with:
           file: lcov.info
           token: ${{ secrets.codecov_token }}
+      - name: Stop containers
+        if: always()
+        run: docker compose -f scripts/docker-compose.yml down

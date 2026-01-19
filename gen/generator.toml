@@ -1,0 +1,9 @@
+[general]
+library_name = "libstrophe"
+output_file_path = "../src/libstrophe.jl"
+module_name = "LibStrophe"
+jll_pkg_name = "libstrophe_jll"
+use_julia_native_enum_type = true
+# export_symbol_prefixes = ["hid_"]
+# output_ignorelist = [""]
+extract_c_comment_style = "doxygen"

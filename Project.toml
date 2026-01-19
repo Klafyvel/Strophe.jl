@@ -1,10 +1,16 @@
 name = "Strophe"
 uuid = "6ffd5fb6-ee8f-5ca1-bf15-72c8a2450bd8"
-authors = ["klafyvel <hugo@klafyvel.me>"]
 version = "0.1.0"
+authors = ["klafyvel <hugo@klafyvel.me>"]
 
 [workspace]
 projects = ["test", "docs"]
 
+[deps]
+DocStringExtensions = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
+libstrophe_jll = "9ba4b727-a6ae-5378-842c-8467618b2537"
+
 [compat]
+DocStringExtensions = "0.9.5"
 julia = "1.12"
+libstrophe_jll = "0.14.0"
