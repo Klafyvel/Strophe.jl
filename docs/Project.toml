@@ -11,4 +11,5 @@ Strophe = {path = ".."}
 
 [compat]
 Documenter = "1"
+Literate = "2.21.0"
 LiveServer = "1.5.0"
