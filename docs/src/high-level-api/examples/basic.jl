@@ -12,7 +12,8 @@ with `docker-compose up`. Depending on your platform, you might need sudo.
 
 # ## Initialization of the library
 
-import Strophe: ClientConnection, LibStrophe, connect, disconnect, trusttls!, jid!, pass!, context, stop, run
+import Strophe
+import Strophe: LibStrophe
 
 # ## Creation of a callback to react to connection events
 # The connection handler will be called by the underlying LibStrophe library
@@ -25,10 +26,10 @@ import Strophe: ClientConnection, LibStrophe, connect, disconnect, trusttls!, ji
 function connection_handler(conn, status, error, stream_error)
     if status == LibStrophe.XMPP_CONN_CONNECT # We just connected
         @info "Connected!"
-        disconnect(conn)
+        Strophe.disconnect(conn)
     else
         @info "Disconnected!"
-        stop(conn) # stop the event loop
+        Strophe.stop(conn) # stop the event loop
     end
     return nothing
 end
@@ -37,24 +38,24 @@ end
 # The high-level API represents connections using [`Strophe.ParametrizedConnection`](@ref)
 # objects. They have convenience constructors for client and component connections.
 
-conn = ClientConnection(host = "localhost", handler = connection_handler)
+conn = Strophe.ClientConnection(host = "localhost", handler = connection_handler)
 
 # ## Connection to ther server
 # The docker image does not have a proper certificate, so we force libstrophe
 # to trust it. In real life, you probably don't want to do that!
-trusttls!(conn)
+Strophe.trusttls!(conn)
 
 
 # You can change that depending on your configuration
 jid = "gepetto@localhost"
 password = "plopiplop"
 
-jid!(conn, jid)
-pass!(conn, password)
+Strophe.jid!(conn, jid)
+Strophe.pass!(conn, password)
 
 # Finally, we can connect:
-connect(conn) # Will raise a StropheError if connection fails.
-run(conn) # Run the internal event loop from libstrophe
+Strophe.connect(conn) # Will raise a StropheError if connection fails.
+Strophe.run(conn) # Run the internal event loop from libstrophe
 
 # ## But did it work?
 # If you check in the logs of your server, you'll see the following:

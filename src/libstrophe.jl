@@ -4,8 +4,21 @@ The low-level binding to the underlying C-library libstrophe.
 module LibStrophe
 
 using DocStringExtensions: SIGNATURES, TYPEDFIELDS
+import Glossaries
 using libstrophe_jll: libstrophe_jll, libstrophe
 export libstrophe_jll
+
+_g = Glossaries.Glossary()
+Glossaries.define!(_g, :ctx, :name, "ctx")
+Glossaries.define!(_g, :ctx, :type, "Ptr{xmpp_ctx_t}")
+Glossaries.define!(_g, :ctx, :description, "A Strophe context object")
+Glossaries.define!(_g, :conn, :name, "conn")
+Glossaries.define!(_g, :conn, :type, "Ptr{xmpp_conn_t}")
+Glossaries.define!(_g, :conn, :description, "A Strophe connection object")
+Glossaries.define!(_g, :stanza, :name, "stanza")
+Glossaries.define!(_g, :stanza, :type, "Ptr{xmpp_stanza_t}")
+Glossaries.define!(_g, :stanza, :description, "A Strophe stanza object")
+_arg = Glossaries.Argument()
 
 """
 $(SIGNATURES)
@@ -33,14 +46,15 @@ $(SIGNATURES)
 
 Check that Strophe supports a specific API version.
 
-Parameters:
+# Arguments
 * `major`	the major version number
 * `minor`	the minor version number
 
-Returns: `true` if the version is supported and `false` if unsupported
+# Returns
+`true` if the version is supported and `false` if unsupported
 """
 function xmpp_version_check(major, minor)
-    return ccall((:xmpp_version_check, libstrophe), Cint, (Cint, Cint), major, minor)
+    return ccall((:xmpp_version_check, libstrophe), Bool, (Cint, Cint), major, minor)
 end
 
 struct _xmpp_mem_t
@@ -87,11 +101,12 @@ If mem is NULL, a default allocation setup will be used which wraps `malloc()`,
 default logger will be used which does no logging. Basic filtered logging to
 stderr can be done with the [`xmpp_get_default_logger`](@ref) convenience function.
 
-Parameters:
+# Arguments
 * `mem`	a pointer to an `xmpp_mem_t` structure or `C_NULL`
 * `log`	a pointer to an `xmpp_log_t` structure or `C_NULL`
 
-Returns the allocated Strophe context object or `C_NULL` on an error.
+# Returns
+The allocated Strophe context object or `C_NULL` on an error.
 """
 function xmpp_ctx_new(mem, log)
     return ccall((:xmpp_ctx_new, libstrophe), Ptr{xmpp_ctx_t}, (Ptr{xmpp_mem_t}, Ptr{xmpp_log_t}), mem, log)
@@ -102,8 +117,8 @@ $(SIGNATURES)
 
 Free a Strophe context object that is no longer in use.
 
-Parameters:
-* `ctx`	a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 """
 function xmpp_ctx_free(ctx)
     return ccall((:xmpp_ctx_free, libstrophe), Cvoid, (Ptr{xmpp_ctx_t},), ctx)
@@ -114,8 +129,8 @@ $(SIGNATURES)
 
 Set the verbosity level of a Strophe context.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `level` the verbosity level
 """
 function xmpp_ctx_set_verbosity(ctx, level)
@@ -161,10 +176,11 @@ Get a default logger with filtering.
 
 The default logger provides a basic logging setup which writes log messages to stderr. Only messages where level is greater than or equal to the filter level will be logged.
 
-Parameters:
+# Arguments
 * `level` the highest level the logger will log at
 
-Returns the log structure for the given level
+# Returns
+The log structure for the given level
 """
 function xmpp_get_default_logger(level)
     return ccall((:xmpp_get_default_logger, libstrophe), Ptr{xmpp_log_t}, (xmpp_log_level_t,), level)
@@ -312,7 +328,6 @@ typedef void ( * xmpp_conn_handler ) ( xmpp_conn_t * conn , xmpp_conn_event_t ev
 """
 const xmpp_conn_handler = Ptr{Cvoid}
 
-# typedef int ( * xmpp_certfail_handler ) ( const xmpp_tlscert_t * cert , const char * const errormsg )
 """
 The Handler function which will be called when the TLS stack can't verify the authenticity of a Certificate that gets presented by the server we're trying to connect to.
 
@@ -320,13 +335,17 @@ When this function is called and details of the `cert` have to be kept, please c
 
 NB: `errormsg` is specific per certificate on OpenSSL and the same for all certificates on GnuTLS.
 
+Defined as:
+```c
+typedef int ( * xmpp_certfail_handler ) ( const xmpp_tlscert_t * cert , const char * const errormsg )
+```
 
-
-Parameters
+# Arguments
 * `cert`: a Strophe certificate object
 * `errormsg`: The error that caused this.
 
-Returns 0 if the connection attempt should be terminated, 1 if the connection should be established.
+# Returns
+0 if the connection attempt should be terminated, 1 if the connection should be established.
 """
 const xmpp_certfail_handler = Ptr{Cvoid}
 
@@ -352,12 +371,13 @@ We expect the buffer to be NULL-terminated, therefore the usable lengths are:
 
 Useful API's inside this callback are e.g. [`xmpp_conn_get_keyfile`](@ref)
 
-Parameters
+# Arguments
 * `pw`: The buffer where the password shall be stored.
 * `pw_max`: The maximum length of the password.
-* `conn`: The Strophe connection object this callback originates from.
+$(_arg(_g, [:conn]))
 * `userdata`: The userdata pointer as supplied when setting this callback.
-Returns -1 on error, else the number of bytes written to `pw` w/o terminating NUL byte
+# Returns
+ -1 on error, else the number of bytes written to `pw` w/o terminating NUL byte
 """
 const xmpp_password_callback = Ptr{Cvoid}
 
@@ -380,7 +400,7 @@ This function will be called for each socket that is created.
 ` Connections`
 
 # Arguments
-* `conn`: The Strophe connection object this callback originates from.
+$(_arg(_g, [:conn]))
 * `sock`: A pointer to the underlying file descriptor.
 # Returns
 0 on success, -1 on error
@@ -395,7 +415,7 @@ reasonable default keepalive options on sockets when registered for a connection
 with [`xmpp_conn_set_sockopt_callback`](@ref)
 
 # Arguments
-* `conn`: a Strophe connection object
+$(_arg(_g, [:conn]))
 * `sock`: pointer to a socket descriptor
 
 See also [`xmpp_conn_set_sockopt_callback`](@ref).
@@ -413,10 +433,11 @@ $(SIGNATURES)
 
 Create a new Strophe connection object.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 
-Returns a Strophe connection object or `C_NULL` on an error
+# Returns
+A Strophe connection object or `C_NULL` on an error
 """
 function xmpp_conn_new(ctx)
     return ccall((:xmpp_conn_new, libstrophe), Ptr{xmpp_conn_t}, (Ptr{xmpp_ctx_t},), ctx)
@@ -427,10 +448,11 @@ $(SIGNATURES)
 
 Clone a Strophe connection object.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns the same conn object passed in with its reference count incremented by 1
+# Returns
+The same conn object passed in with its reference count incremented by 1
 """
 function xmpp_conn_clone(conn)
     return ccall((:xmpp_conn_clone, libstrophe), Ptr{xmpp_conn_t}, (Ptr{xmpp_conn_t},), conn)
@@ -443,13 +465,14 @@ Release a Strophe connection object.
 
 Decrement the reference count by one for a connection, freeing the connection object if the count reaches 0.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns TRUE if the connection object was freed and FALSE otherwise
+# Returns
+`true` if the connection object was freed and `false` otherwise
 """
 function xmpp_conn_release(conn)
-    return ccall((:xmpp_conn_release, libstrophe), Cint, (Ptr{xmpp_conn_t},), conn)
+    return ccall((:xmpp_conn_release, libstrophe), Bool, (Ptr{xmpp_conn_t},), conn)
 end
 
 """
@@ -457,8 +480,8 @@ $(SIGNATURES)
 
 Return applied flags for the connection.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 """
 function xmpp_conn_get_flags(conn)
     return ccall((:xmpp_conn_get_flags, libstrophe), Clong, (Ptr{xmpp_conn_t},), conn)
@@ -485,11 +508,12 @@ Supported flags are:
 * `LibStrophe.XMPP_CONN_FLAG_COMPRESSION_DONT_RESET`
 
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `fags` ORed connection flags
 
-Returns [`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
+# Returns
+[`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
 """
 function xmpp_conn_set_flags(conn, flags)
     return ccall((:xmpp_conn_set_flags, libstrophe), Cint, (Ptr{xmpp_conn_t}, Clong), conn, flags)
@@ -500,10 +524,11 @@ $(SIGNATURES)
 
 Get the JID which is or will be bound to the connection.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns a string containing the full JID or `C_NULL` if it has not been set.
+# Returns
+A string containing the full JID or `C_NULL` if it has not been set.
 """
 function xmpp_conn_get_jid(conn)
     return ccall((:xmpp_conn_get_jid, libstrophe), Ptr{Cchar}, (Ptr{xmpp_conn_t},), conn)
@@ -517,10 +542,11 @@ Get the JID discovered during binding time.
 This JID will contain the resource used by the current connection. This is
 useful in the case where a resource was not specified for binding.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns a string containing the full JID or `C_NULL` if it's not been discovered
+# Returns
+A string containing the full JID or `C_NULL` if it's not been discovered
 """
 function xmpp_conn_get_bound_jid(conn)
     return ccall((:xmpp_conn_get_bound_jid, libstrophe), Ptr{Cchar}, (Ptr{xmpp_conn_t},), conn)
@@ -536,8 +562,8 @@ after a connection is created. The function will make a copy of the JID string.
 If the supplied JID is missing the node, SASL ANONYMOUS authentication will be
 used.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `jid` a full or bare JID
 """
 function xmpp_conn_set_jid(conn, jid)
@@ -549,8 +575,8 @@ $(SIGNATURES)
 
 Set the CAfile.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `path` path to a certificate file
 """
 function xmpp_conn_set_cafile(conn, path)
@@ -562,8 +588,8 @@ $(SIGNATURES)
 
 Set the CApath.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `path` path to a folder containing certificates
 """
 function xmpp_conn_set_capath(conn, path)
@@ -575,8 +601,8 @@ $(SIGNATURES)
 
 Set the Handler function which will be called when the TLS stack can't verify the CA of the server we're trying to connect to.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `hndl` certfail Handler function
 """
 function xmpp_conn_set_certfail_handler(conn, hndl)
@@ -590,10 +616,11 @@ Retrieve the peer certificate.
 
 The returned Certificate object must be free'd by calling [`xmpp_tlscert_free`](@ref)
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns a Strophe Certificate object
+# Returns
+A Strophe Certificate object
 """
 function xmpp_conn_get_peer_cert(conn)
     return ccall((:xmpp_conn_get_peer_cert, libstrophe), Ptr{xmpp_tlscert_t}, (Ptr{xmpp_conn_t},), conn)
@@ -604,8 +631,8 @@ $(SIGNATURES)
 
 Set the Callback function which will be called when the TLS stack can't decrypt a password protected key file.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `cb` The callback function that shall be called
 * `userdata` An opaque data pointer that will be passed to the callback
 """
@@ -620,8 +647,8 @@ Set the number of retry attempts to decrypt a private key file.
 
 In case the user enters the password manually it can be useful to directly retry if the decryption of the key file failed.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `retires` The number of retries that should be tried
 """
 function xmpp_conn_set_password_retries(conn, retries)
@@ -635,10 +662,11 @@ Retrieve the path of the key file that shall be unlocked.
 
 This makes usually sense to be called from the [`xmpp_password_callback`](@ref).
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns a String of the path to the key file
+# Returns
+A String of the path to the key file
 """
 function xmpp_conn_get_keyfile(conn)
     return ccall((:xmpp_conn_get_keyfile, libstrophe), Ptr{Cchar}, (Ptr{xmpp_conn_t},), conn)
@@ -655,8 +683,8 @@ In case the Private Key is encrypted, a callback must be set via [`xmpp_conn_set
 
 In case one wants to use a PKCS#12 encoded file, it should be passed via the cert parameter and key should be `C_NULL`. Passing a PKCS#12 file in key is deprecated.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `cert` path to a certificate file or a P12 file
 * `key` path to a private key file or a P12 file
 """
@@ -669,10 +697,11 @@ $(SIGNATURES)
 
 Get the number of xmppAddr entries in the client certificate.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns the number of xmppAddr entries in the client certificate
+# Returns
+The number of xmppAddr entries in the client certificate
 """
 function xmpp_conn_cert_xmppaddr_num(conn)
     return ccall((:xmpp_conn_cert_xmppaddr_num, libstrophe), Cuint, (Ptr{xmpp_conn_t},), conn)
@@ -683,11 +712,12 @@ $(SIGNATURES)
 
 Get a specific xmppAddr entry.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `n` the index of the entry, starting at 0
 
-Returns a string containing the xmppAddr or `C_NULL` if n is out of range
+# Returns
+A string containing the xmppAddr or `C_NULL` if n is out of range
 """
 function xmpp_conn_cert_xmppaddr(conn, n)
     return ccall((:xmpp_conn_cert_xmppaddr, libstrophe), Ptr{Cchar}, (Ptr{xmpp_conn_t}, Cuint), conn, n)
@@ -698,10 +728,11 @@ $(SIGNATURES)
 
 Get the password used for authentication of a connection.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns a string containing the password or `C_NULL` if it has not been set.
+# Returns
+A string containing the password or `C_NULL` if it has not been set.
 """
 function xmpp_conn_get_pass(conn)
     return ccall((:xmpp_conn_get_pass, libstrophe), Ptr{Cchar}, (Ptr{xmpp_conn_t},), conn)
@@ -715,8 +746,8 @@ Set the password used to authenticate the connection.
 If any password was previously set, it will be discarded. The function will
 make a copy of the password string.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `pass` the password
 """
 function xmpp_conn_set_pass(conn, pass)
@@ -728,10 +759,11 @@ $(SIGNATURES)
 
 Get the strophe context that the connection is associated with.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns a Strophe context
+# Returns
+A Strophe context
 """
 function xmpp_conn_get_context(conn)
     return ccall((:xmpp_conn_get_context, libstrophe), Ptr{xmpp_ctx_t}, (Ptr{xmpp_conn_t},), conn)
@@ -742,13 +774,14 @@ $(SIGNATURES)
 
 Return whether TLS session is established or not.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns 1 if TLS session is established and 0 otherwise
+# Returns
+`true` if TLS session is established and `false` otherwise
 """
 function xmpp_conn_is_secured(conn)
-    return ccall((:xmpp_conn_is_secured, libstrophe), Cint, (Ptr{xmpp_conn_t},), conn)
+    return ccall((:xmpp_conn_is_secured, libstrophe), Bool, (Ptr{xmpp_conn_t},), conn)
 end
 
 """
@@ -762,10 +795,8 @@ If the connection is already connected, this callback will be called immediately
 To set options that can only be applied to disconnected sockets, the callback
 must be registered before connecting.
 
-Parameters:
-* `conn` a Strophe connection object
-
-Returns 1 if TLS session is established and 0 otherwise
+# Arguments
+$(_arg(_g, [:conn]))
 """
 function xmpp_conn_set_sockopt_callback(conn, callback)
     return ccall((:xmpp_conn_set_sockopt_callback, libstrophe), Cvoid, (Ptr{xmpp_conn_t}, xmpp_sockopt_callback), conn, callback)
@@ -774,46 +805,50 @@ end
 """
 $(SIGNATURES)
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns 1 if connection is in connecting state and 0 otherwise
+# Returns
+`true` if connection is in connecting state and `false` otherwise
 """
 function xmpp_conn_is_connecting(conn)
-    return ccall((:xmpp_conn_is_connecting, libstrophe), Cint, (Ptr{xmpp_conn_t},), conn)
+    return ccall((:xmpp_conn_is_connecting, libstrophe), Bool, (Ptr{xmpp_conn_t},), conn)
 end
 
 """
 $(SIGNATURES)
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns 1 if connection is established and 0 otherwise
+# Returns
+`true` if connection is established and `false` otherwise
 """
 function xmpp_conn_is_connected(conn)
-    return ccall((:xmpp_conn_is_connected, libstrophe), Cint, (Ptr{xmpp_conn_t},), conn)
+    return ccall((:xmpp_conn_is_connected, libstrophe), Bool, (Ptr{xmpp_conn_t},), conn)
 end
 
 """
 $(SIGNATURES)
 
-Parameters:
-* `conn` a strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns 1 if connection is in disconnected state and 0 otherwise
+# Returns
+`true` if connection is in disconnected state and `false` otherwise
 """
 function xmpp_conn_is_disconnected(conn)
-    return ccall((:xmpp_conn_is_disconnected, libstrophe), Cint, (Ptr{xmpp_conn_t},), conn)
+    return ccall((:xmpp_conn_is_disconnected, libstrophe), Bool, (Ptr{xmpp_conn_t},), conn)
 end
 
 """
 $(SIGNATURES)
 
-Parameters:
-* `conn` a strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns the number of entries in the send queue
+# Returns
+The number of entries in the send queue
 """
 function xmpp_conn_send_queue_len(conn)
     return ccall((:xmpp_conn_send_queue_len, libstrophe), Cint, (Ptr{xmpp_conn_t},), conn)
@@ -838,11 +873,12 @@ This can be used to manage the send queue in case a server isn't fast enough in
 processing the elements you're trying to send or your outgoing bandwidth isn't
 fast enough to transfer everything you want to send out.
 
-Parameters:
-* `conn` a strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `which` the element that shall be removed. See [`xmpp_queue_element_t`](@ref)
 
-Returns the rendered stanza. The pointer returned has to be free'd by the caller
+# Returns
+The rendered stanza. The pointer returned has to be free'd by the caller
 of this function.
 """
 function xmpp_conn_send_queue_drop_element(conn, which)
@@ -852,12 +888,13 @@ end
 """
 $(SIGNATURES)
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `sm_state` A Stream Management state returned from a call to
     [`xmpp_conn_get_sm_state`](@ref)
 
-Returns `XMPP_EOK` (0) on success or a number less than 0 on failure.
+# Returns
+`XMPP_EOK` (0) on success or a number less than 0 on failure.
 """
 function xmpp_conn_set_sm_state(conn, sm_state)
     return ccall((:xmpp_conn_set_sm_state, libstrophe), Cint, (Ptr{xmpp_conn_t}, Ptr{xmpp_sm_state_t}), conn, sm_state)
@@ -877,10 +914,11 @@ object, one can call [`xmpp_free_sm_state`](@ref)
 
 After calling this function to retrieve the state, only call one of the other two.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns The Stream Management state of the connection or `C_NULL` on error
+# Returns
+The Stream Management state of the connection or `C_NULL` on error
 """
 function xmpp_conn_get_sm_state(conn)
     return ccall((:xmpp_conn_get_sm_state, libstrophe), Ptr{xmpp_sm_state_t}, (Ptr{xmpp_conn_t},), conn)
@@ -892,12 +930,12 @@ The function which will be called when Strophe updates its internal SM state.
 
 Please note that you have to create a copy of the buffer, since the library will free the buffer right after return of the callback function.
 
-Parameters
-* `conn`: The Strophe connection object this callback originates from.
-* `ctx`: The `ctx` pointer as passed to [`xmpp_conn_set_sm_callback`](@ref)
+# Arguments
+$(_arg(_g, [:conn, :ctx]))
 * `sm_state`: A pointer to a buffer containing the serialized SM state.
 * `sm_state_len`: The length of `sm_state`.
-Returns 0 on success, -1 on error
+# Returns
+0 on success, -1 on error
 """
 const xmpp_sm_callback = Ptr{Cvoid}
 
@@ -911,7 +949,7 @@ This can be used in conjunction with [`xmpp_conn_restore_sm_state`](@ref) to
 e.g. implement a mechanism that retains an SM state over potential
 application terminations.
 
-Parameters
+# Arguments
 * `conn`: The Strophe connection object this callback originates from.
 * `cb`: a callback function or `C_NULL` to disable
 * `ctx`: The `ctx` pointer as passed on invocation of the callback function
@@ -930,11 +968,12 @@ This can be used in conjunction with [`xmpp_conn_set_sm_state`](@ref) to
 e.g. implement a mechanism that retains an SM state over potential
 application terminations.
 
-Parameters
-* `conn`: The Strophe connection object this callback originates from.
+# Arguments
+$(_arg(_g, [:conn]))
 * `sm_state`: a buffer as passed to the SM callback
 * `sm_state_len`: the length of `sm_state`
-Returns 0 on success, -1 on error
+# Returns
+0 on success, -1 on error
 """
 function xmpp_conn_restore_sm_state(conn, sm_state, sm_state_len)
     return ccall((:xmpp_conn_restore_sm_state, libstrophe), Cint, (Ptr{xmpp_conn_t}, Ptr{Cuchar}, Csize_t), conn, sm_state, sm_state_len)
@@ -945,7 +984,7 @@ $(SIGNATURES)
 
 c.f. [`xmpp_conn_get_sm_state`](@ref) for usage documentation
 
-Parameters:
+# Arguments
 * `sm_state` a Stream Management state returned from a call to
     [`xmpp_conn_get_sm_state`](@ref)
 """
@@ -964,8 +1003,8 @@ callback function. The domain and port to connect to are usually determined by
 an SRV lookup for the xmpp-client service at the domain specified in the JID.
 If SRV lookup fails, altdomain and altport will be used instead if specified.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `altdomain` a string with domain to use if SRV lookup fails. If this is `C_NULL`,
     the domain from the JID will be used.
 * `altport` an integer port number to use if SRV lookup fails. If this is 0,
@@ -974,7 +1013,8 @@ Parameters:
     notifications of connection status
 * `userdata` an opaque data pointer that will be passed to the callback
 
-Returns [`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
+# Returns
+[`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
 """
 function xmpp_connect_client(conn, altdomain, altport, callback, userdata)
     return ccall((:xmpp_connect_client, libstrophe), Cint, (Ptr{xmpp_conn_t}, Ptr{Cchar}, Cushort, xmpp_conn_handler, Ptr{Cvoid}), conn, altdomain, altport, callback, userdata)
@@ -993,8 +1033,8 @@ and port to connect to must be provided in this case as the JID provided to the
 call serves as component identifier to the server and is not subject to DNS
 resolution.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `server` a string with domain to use directly as the domain can't be extracted
     from the component name/JID. If this is not set, the call will fail. the
     domain from the JID will be used.
@@ -1005,7 +1045,8 @@ Parameters:
     notifications of connection status
 * `userdata` an opaque data pointer that will be passed to the callback
 
-Returns [`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
+# Returns
+[`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
 """
 function xmpp_connect_component(conn, server, port, callback, userdata)
     return ccall((:xmpp_connect_component, libstrophe), Cint, (Ptr{xmpp_conn_t}, Ptr{Cchar}, Cushort, xmpp_conn_handler, Ptr{Cvoid}), conn, server, port, callback, userdata)
@@ -1028,8 +1069,8 @@ XMPP stream is opened successfully and user may send stanzas over the connection
 This function doesn't use password nor node part of a jid. Therefore, the only
 required configuration is a domain (or full jid) passed via [`xmpp_conn_set_jid`](@ref).
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `altdomain` a string with domain to use if SRV lookup fails. If this is `C_NULL`,
     the domain from the JID will be used.
 * `altport` an integer port number to use if SRV lookup fails. If this is 0,
@@ -1038,7 +1079,8 @@ Parameters:
     notifications of connection status
 * `userdata` an opaque data pointer that will be passed to the callback
 
-Returns [`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
+# Returns
+[`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
 """
 function xmpp_connect_raw(conn, altdomain, altport, callback, userdata)
     return ccall((:xmpp_connect_raw, libstrophe), Cint, (Ptr{xmpp_conn_t}, Ptr{Cchar}, Cushort, xmpp_conn_handler, Ptr{Cvoid}), conn, altdomain, altport, callback, userdata)
@@ -1053,10 +1095,11 @@ The default tag is the one sent by [`xmpp_connect_client`](@ref). User's
 connection handler is called with event `XMPP_CONN_CONNECT` when server replies
 with its opening tag.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns [`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
+# Returns
+[`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
 
 !!! note
     The connection must be connected with [`xmpp_connect_raw`](@ref).
@@ -1073,14 +1116,15 @@ Send an opening stream tag.
 User's connection handler is called with event `XMPP_CONN_CONNECT` when server
 replies with its opening tag.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `attributes` Array of strings in format: even index points to an attribute
    name and odd index points to its value
 * `attributes_len` Number of elements in the attributes array, it should be
     number of attributes multiplied by 2
 
-Returns [`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
+# Returns
+[`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
 
 !!! note
     The connection must be connected with [`xmpp_connect_raw`](@ref).
@@ -1094,10 +1138,11 @@ $(SIGNATURES)
 
 Start synchronous TLS handshake with the server.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 
-Returns [`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
+# Returns
+[`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
 """
 function xmpp_conn_tls_start(conn)
     return ccall((:xmpp_conn_tls_start, libstrophe), Cint, (Ptr{xmpp_conn_t},), conn)
@@ -1112,8 +1157,8 @@ This function starts the disconnection sequence by sending `</stream:stream>`
 to the XMPP server. This function will do nothing if the connection state is
 different from `CONNECTING` or `CONNECTED`.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 """
 function xmpp_disconnect(conn)
     return ccall((:xmpp_disconnect, libstrophe), Cvoid, (Ptr{xmpp_conn_t},), conn)
@@ -1127,8 +1172,8 @@ Send an XML stanza to the XMPP server.
 This is the main way to send data to the XMPP server. The function will
 terminate without action if the connection state is not `CONNECTED`.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `stanza` a Strophe stanza object
 """
 function xmpp_send(conn, stanza)
@@ -1145,8 +1190,8 @@ It is used primarily by `xmpp_send_raw_string`. This function should be used
 with care as it does not validate the bytes and invalid data may result in
 stream termination by the XMPP server.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `data` a buffer of raw bytes
 * `len` the length of the data in the buffer
 """
@@ -1174,8 +1219,8 @@ resolution of the event loop.
 If the handler function returns true, it will be kept, and if it returns false,
 it will be deleted from the list of handlers.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `handler` a function pointer to a timed handler
 * `period` the time in milliseconds between firings
 * `userdata` an opaque data pointer that will be passed to the handler
@@ -1189,11 +1234,9 @@ $(SIGNATURES)
 
 Delete a timed handler.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `handler` function pointer to the handler
-
-Returns 1 if the stanza is a text node, 0 otherwise
 """
 function xmpp_timed_handler_delete(conn, handler)
     return ccall((:xmpp_timed_handler_delete, libstrophe), Cvoid, (Ptr{xmpp_conn_t}, xmpp_timed_handler), conn, handler)
@@ -1231,8 +1274,8 @@ Notice, the same handler pointer may be added multiple times with different
 userdata pointers. However, [`xmpp_global_timed_handler_delete`](@ref) deletes
 all occurrences.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `handler` a function pointer to a timed handler
 * `period` the time in milliseconds between firings
 * `userdata` an opaque data pointer that will be passed to the handler
@@ -1246,8 +1289,8 @@ $(SIGNATURES)
 
 Delete a global timed handler.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `handler` function pointer to the handler
 """
 function xmpp_global_timed_handler_delete(ctx, handler)
@@ -1276,8 +1319,8 @@ specific `<iq/>` stanzas based on the `<query/>` child namespace.
 If the handler function returns 1, it will be kept, and if it returns 0,
 it will be deleted from the list of handlers.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `handler` a function pointer to a stanza handler
 * `ns` a string with the namespace to match
 * `name` a string with the stanza name to match
@@ -1293,8 +1336,8 @@ $(SIGNATURES)
 
 Delete a stanza handler.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `handler` a function pointer to a stanza handler
 """
 function xmpp_handler_delete(conn, handler)
@@ -1313,8 +1356,8 @@ specific `<iq/>`s.
 If the handler function returns true, it will be kept, and if it returns false,
 it will be deleted from the list of handlers.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `handler` a function pointer to a stanza handler
 * `id` a string with the id
 * `userdata` an opaque data pointer that will be passed to the handler
@@ -1328,8 +1371,8 @@ $(SIGNATURES)
 
 Delete an id based stanza handler.
 
-Parameters:
-* `conn` a Strophe connection object
+# Arguments
+$(_arg(_g, [:conn]))
 * `handler` a function pointer to a stanza handler
 * `id` a string containing the id the handler is for
 """
@@ -1344,10 +1387,11 @@ Create a stanza object.
 
 This function allocates and initializes a blank stanza object. The stanza will have a reference count of one, so the caller does not need to clone it.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 
-Returns a stanza object
+# Returns
+A stanza object
 """
 function xmpp_stanza_new(ctx)
     return ccall((:xmpp_stanza_new, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_ctx_t},), ctx)
@@ -1362,11 +1406,12 @@ This function allocates and initializes a stanza object which represents stanza
 located in the string. The stanza will have a reference count of one, so the
 caller does not need to clone it.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `str` stanza in `NULL` terminated string representation
 
-Returns a stanza object or `C_NULL` on an error
+# Returns
+A stanza object or `C_NULL` on an error
 """
 function xmpp_stanza_new_from_string(ctx, str)
     return ccall((:xmpp_stanza_new_from_string, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_ctx_t}, Ptr{Cchar}), ctx, str)
@@ -1379,10 +1424,11 @@ Clone a stanza object.
 
 This function increments the reference count of the stanza object.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns the stanza object with it's reference count incremented
+# Returns
+The stanza object with it's reference count incremented
 """
 function xmpp_stanza_clone(stanza)
     return ccall((:xmpp_stanza_clone, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_stanza_t},), stanza)
@@ -1395,10 +1441,11 @@ Copy a stanza and its children.
 
 This function copies a stanza along with all its children and returns the new stanza and children with a reference count of 1. The returned stanza will have no parent and no siblings. This function is useful for extracting a child stanza for inclusion in another tree.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 
-Returns a new stanza object
+# Returns
+A new stanza object
 """
 function xmpp_stanza_copy(stanza)
     return ccall((:xmpp_stanza_copy, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_stanza_t},), stanza)
@@ -1411,13 +1458,14 @@ Release a stanza object and all of its children.
 
 This function releases a stanza object and potentially all of its children, which may cause the object(s) to be freed.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns 1 if the object was freed and 0 otherwise
+# Returns
+`true` if the object was freed and `false` otherwise
 """
 function xmpp_stanza_release(stanza)
-    return ccall((:xmpp_stanza_release, libstrophe), Cint, (Ptr{xmpp_stanza_t},), stanza)
+    return ccall((:xmpp_stanza_release, libstrophe), Bool, (Ptr{xmpp_stanza_t},), stanza)
 end
 
 function xmpp_stanza_get_context(stanza)
@@ -1429,13 +1477,14 @@ $(SIGNATURES)
 
 Determine if a stanza is a text node.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns 1 if the stanza is a text node, 0 otherwise
+# Returns
+`true` if the stanza is a text node, `false` otherwise
 """
 function xmpp_stanza_is_text(stanza)
-    return ccall((:xmpp_stanza_is_text, libstrophe), Cint, (Ptr{xmpp_stanza_t},), stanza)
+    return ccall((:xmpp_stanza_is_text, libstrophe), Bool, (Ptr{xmpp_stanza_t},), stanza)
 end
 
 """
@@ -1443,10 +1492,11 @@ $(SIGNATURES)
 
 Determine if a stanza is a tag node.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns 1 if the stanza is a tag node, 0 otherwise
+# Returns
+`true` if the stanza is a tag node, `false` otherwise
 """
 function xmpp_stanza_is_tag(stanza)
     return ccall((:xmpp_stanza_is_tag, libstrophe), Cint, (Ptr{xmpp_stanza_t},), stanza)
@@ -1462,12 +1512,13 @@ The text is returned in an allocated, null-terminated buffer. It starts by
 allocating a 1024 byte buffer and reallocates more memory if that is not large
 enough.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `buf` a reference to a string pointer
 * `buflen` a reference to a `size_t`
 
-Returns 0 on success ([`XMPP_EOK`](@ref)), and a number less than 0 on failure
+# Returns
+0 on success ([`XMPP_EOK`](@ref)), and a number less than 0 on failure
 ([`XMPP_EMEM`](@ref), [`XMPP_EINVOP`](@ref))
 """
 function xmpp_stanza_to_text(stanza, buf, buflen)
@@ -1483,10 +1534,11 @@ This function returns the first child of the stanza object. The rest of the
 children can be obtained by calling [`xmpp_stanza_get_next`](@ref) to iterate
 over the siblings.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns the first child stanza or `C_NULL` if there are no children
+# Returns
+The first child stanza or `C_NULL` if there are no children
 """
 function xmpp_stanza_get_children(stanza)
     return ccall((:xmpp_stanza_get_children, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_stanza_t},), stanza)
@@ -1500,11 +1552,12 @@ Get the first child of stanza with name.
 This function searches all the immediate children of stanza for a child stanza
 that matches the name. The first matching child is returned.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `name` a string with the name to match
 
-Returns the matching child stanza object or `C_NULL` if no match was found
+# Returns
+The matching child stanza object or `C_NULL` if no match was found
 """
 function xmpp_stanza_get_child_by_name(stanza, name)
     return ccall((:xmpp_stanza_get_child_by_name, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_stanza_t}, Ptr{Cchar}), stanza, name)
@@ -1518,11 +1571,12 @@ Get the first child of a stanza with a given namespace.
 This function searches all the immediate children of a stanza for a child stanza
 that matches the namespace provided. The first matching child is returned.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `ns` a string with the namespace to match
 
-Returns the matching child stanza object or `C_NULL` if no match was found
+# Returns
+The matching child stanza object or `C_NULL` if no match was found
 """
 function xmpp_stanza_get_child_by_ns(stanza, ns)
     return ccall((:xmpp_stanza_get_child_by_ns, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_stanza_t}, Ptr{Cchar}), stanza, ns)
@@ -1536,12 +1590,13 @@ Get the first child of stanza with name and a given namespace.
 This function searches all the immediate children of stanza for a child stanza
 that matches the name and namespace provided. The first matching child is returned.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `name` a string with the name to match
 * `ns`	a string with the namespace to match
 
-Returns the matching child stanza object or `C_NULL` if no match was found
+# Returns
+The matching child stanza object or `C_NULL` if no match was found
 """
 function xmpp_stanza_get_child_by_name_and_ns(stanza, name, ns)
     return ccall((:xmpp_stanza_get_child_by_name_and_ns, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_stanza_t}, Ptr{Cchar}, Ptr{Cchar}), stanza, name, ns)
@@ -1552,10 +1607,11 @@ $(SIGNATURES)
 
 Get the next sibling of a stanza.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns the next sibling stanza or `C_NULL` if there are no more siblings
+# Returns
+The next sibling stanza or `C_NULL` if there are no more siblings
 """
 function xmpp_stanza_get_next(stanza)
     return ccall((:xmpp_stanza_get_next, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_stanza_t},), stanza)
@@ -1568,11 +1624,12 @@ Add a child stanza to a stanza object.
 
 This function clones the child and appends it to the stanza object's children.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `child` the child stanza object
 
-Returns [`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
+# Returns
+[`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
 """
 function xmpp_stanza_add_child(stanza, child)
     return ccall((:xmpp_stanza_add_child, libstrophe), Cint, (Ptr{xmpp_stanza_t}, Ptr{xmpp_stanza_t}), stanza, child)
@@ -1588,12 +1645,13 @@ If `do_clone` is 1, user keeps reference to the child stanza and must call
 user transfers ownership and must not neither call [`xmpp_stanza_release`](@ref)
 for the child stanza nor use it.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `child` the child stanza object
 * `do_clone` 1 to increase ref count of child (default for [`xmpp_stanza_add_child`](@ref))
 
-Returns [`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
+# Returns
+[`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
 """
 function xmpp_stanza_add_child_ex(stanza, child, do_clone)
     return ccall((:xmpp_stanza_add_child_ex, libstrophe), Cint, (Ptr{xmpp_stanza_t}, Ptr{xmpp_stanza_t}, Cint), stanza, child, do_clone)
@@ -1607,11 +1665,12 @@ Get an attribute from a stanza.
 This function returns a pointer to the attribute value. If the caller wishes to
 save this value it must make its own copy.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `name` a string containing attribute name
 
-Returns a string with the attribute value or `C_NULL` on an error
+# Returns
+A string with the attribute value or `C_NULL` on an error
 """
 function xmpp_stanza_get_attribute(stanza, name)
     return ccall((:xmpp_stanza_get_attribute, libstrophe), Ptr{Cchar}, (Ptr{xmpp_stanza_t}, Ptr{Cchar}), stanza, name)
@@ -1622,10 +1681,11 @@ $(SIGNATURES)
 
 Count the attributes in a stanza object.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns the number of attributes for the stanza object
+# Returns
+The number of attributes for the stanza object
 """
 function xmpp_stanza_get_attribute_count(stanza)
     return ccall((:xmpp_stanza_get_attribute_count, libstrophe), Cint, (Ptr{xmpp_stanza_t},), stanza)
@@ -1639,12 +1699,13 @@ Get all attributes for a stanza object.
 This function populates the array with attributes from the stanza. The `attr`
 array will be in the format: `attr[i] = attribute name`, `attr[i+1] = attribute value`.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `attr` the string array to populate
 * `attrlen` the size of the array
 
-Returns the number of slots used in the array, which will be 2 times the number
+# Returns
+The number of slots used in the array, which will be 2 times the number
 of attributes in the stanza
 """
 function xmpp_stanza_get_attributes(stanza, attr, attrlen)
@@ -1659,10 +1720,11 @@ Get the text data for a text stanza.
 This function copies the text data from a stanza and returns the new allocated
 string. The caller is responsible for freeing this string with [`xmpp_free`](@ref).
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns an allocated string with the text data
+# Returns
+An allocated string with the text data
 """
 function xmpp_stanza_get_text(stanza)
     return ccall((:xmpp_stanza_get_text, libstrophe), Ptr{Cchar}, (Ptr{xmpp_stanza_t},), stanza)
@@ -1679,10 +1741,11 @@ translate the datatype as this will save a double allocation. The caller should
 not hold onto this pointer, and is responsible for allocating a copy if it needs
 one.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns an string pointer to the data or `C_NULL`
+# Returns
+An string pointer to the data or `C_NULL`
 """
 function xmpp_stanza_get_text_ptr(stanza)
     return ccall((:xmpp_stanza_get_text_ptr, libstrophe), Ptr{Cchar}, (Ptr{xmpp_stanza_t},), stanza)
@@ -1695,10 +1758,11 @@ Get the stanza name.
 
 This function returns a pointer to the stanza name. If the caller needs to store this data, it must make a copy.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns a string with the stanza name
+# Returns
+A string with the stanza name
 """
 function xmpp_stanza_get_name(stanza)
     return ccall((:xmpp_stanza_get_name, libstrophe), Ptr{Cchar}, (Ptr{xmpp_stanza_t},), stanza)
@@ -1709,12 +1773,13 @@ $(SIGNATURES)
 
 Set an attribute for a stanza object.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `key` a string with the attribute name
 * `value` a string with the attribute value
 
-Returns [`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
+# Returns
+[`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
 """
 function xmpp_stanza_set_attribute(stanza, key, value)
     return ccall((:xmpp_stanza_set_attribute, libstrophe), Cint, (Ptr{xmpp_stanza_t}, Ptr{Cchar}, Ptr{Cchar}), stanza, key, value)
@@ -1725,11 +1790,12 @@ $(SIGNATURES)
 
 Set the name of a stanza.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `name` a string with the name of the stanza
 
-Returns 0 on success ([`XMPP_EOK`](@ref)), and a number less than 0 on failure
+# Returns
+0 on success ([`XMPP_EOK`](@ref)), and a number less than 0 on failure
 ([`XMPP_EMEM`](@ref), [`XMPP_EINVOP`](@ref))
 """
 function xmpp_stanza_set_name(stanza, name)
@@ -1745,11 +1811,12 @@ This function copies the text given and sets the stanza object's text to it.
 Attempting to use this function on a stanza that has a name will fail with
 [`XMPP_EINVOP`](@ref). This function takes the text as a null-terminated string.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `text` a string with the text
 
-Returns 0 on success ([`XMPP_EOK`](@ref)), and a number less than 0 on failure
+# Returns
+0 on success ([`XMPP_EOK`](@ref)), and a number less than 0 on failure
 """
 function xmpp_stanza_set_text(stanza, text)
     return ccall((:xmpp_stanza_set_text, libstrophe), Cint, (Ptr{xmpp_stanza_t}, Ptr{Cchar}), stanza, text)
@@ -1765,12 +1832,13 @@ Attempting to use this function on a stanza that has a name will fail with
 [`XMPP_EINVOP`](@ref). This function takes the text as buffer and a length as opposed to
 a null-terminated string.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `text` a buffer with the text
 * `size` the length of the text
 
-Returns 0 on success ([`XMPP_EOK`](@ref)), and a number less than 0 on failure
+# Returns
+0 on success ([`XMPP_EOK`](@ref)), and a number less than 0 on failure
 """
 function xmpp_stanza_set_text_with_size(stanza, text, size)
     return ccall((:xmpp_stanza_set_text_with_size, libstrophe), Cint, (Ptr{xmpp_stanza_t}, Ptr{Cchar}, Csize_t), stanza, text, size)
@@ -1781,11 +1849,12 @@ $(SIGNATURES)
 
 Delete an attribute from a stanza.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `name` a string containing attribute name
 
-Returns 0 on success ([`XMPP_EOK`](@ref)), and a number less than 0 on failure
+# Returns
+0 on success ([`XMPP_EOK`](@ref)), and a number less than 0 on failure
 """
 function xmpp_stanza_del_attribute(stanza, name)
     return ccall((:xmpp_stanza_del_attribute, libstrophe), Cint, (Ptr{xmpp_stanza_t}, Ptr{Cchar}), stanza, name)
@@ -1798,10 +1867,11 @@ Get the namespace attribute of the stanza object.
 
 This is a convenience function equivalent to: `xmpp_stanza_get_attribute(stanza, "xmlns")`
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns a string with the 'xmlns' attribute value
+# Returns
+A string with the 'xmlns' attribute value
 """
 function xmpp_stanza_get_ns(stanza)
     return ccall((:xmpp_stanza_get_ns, libstrophe), Ptr{Cchar}, (Ptr{xmpp_stanza_t},), stanza)
@@ -1814,10 +1884,11 @@ Get the 'type' attribute of the stanza object.
 
 This is a convenience function equivalent to: `xmpp_stanza_get_attribute(stanza, "type")`
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns a string with the 'type' attribute value
+# Returns
+A string with the 'type' attribute value
 """
 function xmpp_stanza_get_type(stanza)
     return ccall((:xmpp_stanza_get_type, libstrophe), Ptr{Cchar}, (Ptr{xmpp_stanza_t},), stanza)
@@ -1830,10 +1901,11 @@ Get the 'id' attribute of the stanza object.
 
 This is a convenience function equivalent to: `xmpp_stanza_get_attribute(stanza, "id")`
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns a string with the 'id' attribute value
+# Returns
+A string with the 'id' attribute value
 """
 function xmpp_stanza_get_id(stanza)
     return ccall((:xmpp_stanza_get_id, libstrophe), Ptr{Cchar}, (Ptr{xmpp_stanza_t},), stanza)
@@ -1846,10 +1918,11 @@ Get the 'to' attribute of the stanza object.
 
 This is a convenience function equivalent to: `xmpp_stanza_get_attribute(stanza, "to")`
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns a string with the 'to' attribute value
+# Returns
+A string with the 'to' attribute value
 """
 function xmpp_stanza_get_to(stanza)
     return ccall((:xmpp_stanza_get_to, libstrophe), Ptr{Cchar}, (Ptr{xmpp_stanza_t},), stanza)
@@ -1862,10 +1935,11 @@ Get the 'from' attribute of the stanza object.
 
 This is a convenience function equivalent to: `xmpp_stanza_get_attribute(stanza, "from")`
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns a string with the 'from' attribute value
+# Returns
+A string with the 'from' attribute value
 """
 function xmpp_stanza_get_from(stanza)
     return ccall((:xmpp_stanza_get_from, libstrophe), Ptr{Cchar}, (Ptr{xmpp_stanza_t},), stanza)
@@ -1878,11 +1952,12 @@ Set the stanza namespace.
 
 This is a convenience function equivalent to calling: `xmpp_stanza_set_attribute(stanza, "xmlns", ns)`
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `ns` a string with the namespace
 
-Returns [`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
+# Returns
+[`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
 """
 function xmpp_stanza_set_ns(stanza, ns)
     return ccall((:xmpp_stanza_set_ns, libstrophe), Cint, (Ptr{xmpp_stanza_t}, Ptr{Cchar}), stanza, ns)
@@ -1895,11 +1970,12 @@ Set the 'id' attribute of a stanza.
 
 This is a convenience function for: `xmpp_stanza_set_attribute(stanza, 'id', id)`
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `id` a string containing the 'id' value
 
-Returns [`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
+# Returns
+[`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
 """
 function xmpp_stanza_set_id(stanza, id)
     return ccall((:xmpp_stanza_set_id, libstrophe), Cint, (Ptr{xmpp_stanza_t}, Ptr{Cchar}), stanza, id)
@@ -1912,11 +1988,12 @@ Set the 'type' attribute of a stanza.
 
 This is a convenience function for: `xmpp_stanza_set_attribute(stanza, 'type', type)`
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `type` a string containing the 'type' value
 
-Returns [`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
+# Returns
+[`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
 """
 function xmpp_stanza_set_type(stanza, type)
     return ccall((:xmpp_stanza_set_type, libstrophe), Cint, (Ptr{xmpp_stanza_t}, Ptr{Cchar}), stanza, type)
@@ -1929,11 +2006,12 @@ Set the 'to' attribute of a stanza.
 
 This is a convenience function for: `xmpp_stanza_set_attribute(stanza, 'to', to)`
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `to` a string containing the 'to' value
 
-Returns [`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
+# Returns
+[`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
 """
 function xmpp_stanza_set_to(stanza, to)
     return ccall((:xmpp_stanza_set_to, libstrophe), Cint, (Ptr{xmpp_stanza_t}, Ptr{Cchar}), stanza, to)
@@ -1946,11 +2024,12 @@ Set the 'from' attribute of a stanza.
 
 This is a convenience function for: `xmpp_stanza_set_attribute(stanza, 'from', from)`
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `from` a string containing the 'from' value
 
-Returns [`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
+# Returns
+[`XMPP_EOK`](@ref) (0) on success or a number less than 0 on failure
 """
 function xmpp_stanza_set_from(stanza, from)
     return ccall((:xmpp_stanza_set_from, libstrophe), Cint, (Ptr{xmpp_stanza_t}, Ptr{Cchar}), stanza, from)
@@ -1965,10 +2044,11 @@ This function makes a copy of a stanza object with the attribute "to" set its
 original "from". The stanza will have a reference count of one, so the caller
 does not need to clone it.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 
-Returns a new Strophe stanza object
+# Returns
+A new Strophe stanza object
 """
 function xmpp_stanza_reply(stanza)
     return ccall((:xmpp_stanza_reply, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_stanza_t},), stanza)
@@ -1981,13 +2061,14 @@ Create an error stanza in reply to the provided stanza.
 
 Check https://tools.ietf.org/html/rfc6120#section-8.3 for details.
 
-Parameters:
+# Arguments
 * `stanza` a Strophe stanza object
 * `error_type` type attribute in the `<error/>` child element
 * `condition` the defined-condition (e.g. "item-not-found")
 * `text` optional description, may be `C_NULL`
 
-Returns a new Strophe stanza object
+# Returns
+A new Strophe stanza object
 """
 function xmpp_stanza_reply_error(stanza, error_type, condition, text)
     return ccall((:xmpp_stanza_reply_error, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_stanza_t}, Ptr{Cchar}, Ptr{Cchar}, Ptr{Cchar}), stanza, error_type, condition, text)
@@ -2000,13 +2081,14 @@ Create a `<message/>` stanza object with given attributes.
 
 Attributes are optional and may be `C_NULL`.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `type` attribute 'type'
 * `to` attribute 'to'
 * `id` attribute 'id'
 
-Returns a new Strophe stanza object
+# Returns
+A new Strophe stanza object
 """
 function xmpp_message_new(ctx, type, to, id)
     return ccall((:xmpp_message_new, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_ctx_t}, Ptr{Cchar}, Ptr{Cchar}, Ptr{Cchar}), ctx, type, to, id)
@@ -2020,10 +2102,11 @@ Get text from `<body/>` child element.
 This function returns new allocated string. The caller is responsible for
 freeing this string with [`xmpp_free`](@ref).
 
-Parameters:
+# Arguments
 * `msg` well formed `<message/>` stanza
 
-Returns allocated string or `C_NULL` on failure (no `<body/>` element or memory
+# Returns
+Allocated string or `C_NULL` on failure (no `<body/>` element or memory
 allocation error)
 """
 function xmpp_message_get_body(msg)
@@ -2035,11 +2118,12 @@ $(SIGNATURES)
 
 Add `<body/>` child element to a `<message/>` stanza with the given text.
 
-Parameters:
+# Arguments
 * `msg` a `<message>` stanza object without `<body/>` child element.
 * `text` The text that shall be placed in the body.
 
-Returns 0 on success ([`XMPP_EOK`](@ref)), and a number less than 0 on failure
+# Returns
+0 on success ([`XMPP_EOK`](@ref)), and a number less than 0 on failure
 ([`XMPP_EMEM`](@ref), [`XMPP_EINVOP`](@ref))
 """
 function xmpp_message_set_body(msg, text)
@@ -2053,12 +2137,13 @@ Create an `<iq/>` stanza object with given attributes.
 
 Attributes are optional and may be `C_NULL`.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `type` attribute 'type'
 * `id` attribute 'id'
 
-Returns a new Strophe stanza object
+# Returns
+A new Strophe stanza object
 """
 function xmpp_iq_new(ctx, type, id)
     return ccall((:xmpp_iq_new, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_ctx_t}, Ptr{Cchar}, Ptr{Cchar}), ctx, type, id)
@@ -2069,10 +2154,11 @@ $(SIGNATURES)
 
 Create a `<presence/>` stanza object.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 
-Returns a new Strophe stanza object
+# Returns
+A new Strophe stanza object
 """
 function xmpp_presence_new(ctx)
     return ccall((:xmpp_presence_new, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_ctx_t},), ctx)
@@ -2085,12 +2171,13 @@ Create an `<stream:error/>` stanza object with given type and error text.
 
 The error text is optional and may be `C_NULL`.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `type` enum of strophe_error_type_t
 * `text` content of a 'text'
 
-Returns a new Strophe stanza object
+# Returns
+A new Strophe stanza object
 """
 function xmpp_error_new(ctx, type, text)
     return ccall((:xmpp_error_new, libstrophe), Ptr{xmpp_stanza_t}, (Ptr{xmpp_ctx_t}, xmpp_error_type_t, Ptr{Cchar}), ctx, type, text)
@@ -2101,13 +2188,14 @@ $(SIGNATURES)
 
 Create a JID string from component parts node, domain, and resource.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `node` a string representing the node
 * `domain` a string representing the domain.  Required.
 * `resource` a string representing the resource
 
-Returns an allocated string with the full JID or `C_NULL` if no domain is specified
+# Returns
+An allocated string with the full JID or `C_NULL` if no domain is specified
 """
 function xmpp_jid_new(ctx, node, domain, resource)
     return ccall((:xmpp_jid_new, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cchar}, Ptr{Cchar}, Ptr{Cchar}), ctx, node, domain, resource)
@@ -2118,11 +2206,12 @@ $(SIGNATURES)
 
 Create a bare JID from a JID.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `jid` the JID
 
-Returns an allocated string with the bare JID or `C_NULL` on an error
+# Returns
+An allocated string with the bare JID or `C_NULL` on an error
 """
 function xmpp_jid_bare(ctx, jid)
     return ccall((:xmpp_jid_bare, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cchar}), ctx, jid)
@@ -2133,11 +2222,12 @@ $(SIGNATURES)
 
 Create a node string from a JID.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `jid` the JID
 
-Returns an allocated string with the node JID or `C_NULL` on an error
+# Returns
+An allocated string with the node JID or `C_NULL` on an error
 """
 function xmpp_jid_node(ctx, jid)
     return ccall((:xmpp_jid_node, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cchar}), ctx, jid)
@@ -2148,11 +2238,12 @@ $(SIGNATURES)
 
 Create a domain string from a JID.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `jid` the JID
 
-Returns an allocated string with the domain or `C_NULL` on an error
+# Returns
+An allocated string with the domain or `C_NULL` on an error
 """
 function xmpp_jid_domain(ctx, jid)
     return ccall((:xmpp_jid_domain, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cchar}), ctx, jid)
@@ -2163,11 +2254,12 @@ $(SIGNATURES)
 
 Create a resource string from a JID.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `jid` the JID
 
-Returns an allocated string with the resource or `C_NULL` if no resource is found or an error occurs
+# Returns
+An allocated string with the resource or `C_NULL` if no resource is found or an error occurs
 """
 function xmpp_jid_resource(ctx, jid)
     return ccall((:xmpp_jid_resource, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cchar}), ctx, jid)
@@ -2184,8 +2276,8 @@ will not wait more than timeout milliseconds for events. This is provided to
 support integration with event loops outside the library, and if used, should
 be called regularly to achieve low latency event handling.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `timeout` time to wait for events in milliseconds
 """
 function xmpp_run_once(ctx, timeout)
@@ -2200,8 +2292,8 @@ Start the event loop.
 This function continuously calls [`xmpp_run_once`](@ref) and does not return
 until xmpp_stop has been called.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 """
 function xmpp_run(ctx)
     return ccall((:xmpp_run, libstrophe), Cvoid, (Ptr{xmpp_ctx_t},), ctx)
@@ -2215,8 +2307,8 @@ Stop the event loop.
 This will stop the event loop after the current iteration and cause
 [`xmpp_run`](@ref) to exit.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 """
 function xmpp_stop(ctx)
     return ccall((:xmpp_stop, libstrophe), Cvoid, (Ptr{xmpp_ctx_t},), ctx)
@@ -2227,8 +2319,8 @@ $(SIGNATURES)
 
 Set the timeout to use when calling [`xmpp_run`](@ref).
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `timeout` the time to wait for events in milliseconds
 """
 function xmpp_ctx_set_timeout(ctx, timeout)
@@ -2240,10 +2332,11 @@ $(SIGNATURES)
 
 Get the Strophe context which is assigned to this certificate.
 
-Parameters:
+# Arguments
 * `cert` a Strophe TLS certificate object
 
-Returns the Strophe context object where this certificate originates from
+# Returns
+The Strophe context object where this certificate originates from
 """
 function xmpp_tlscert_get_ctx(cert)
     return ccall((:xmpp_tlscert_get_ctx, libstrophe), Ptr{xmpp_ctx_t}, (Ptr{xmpp_tlscert_t},), cert)
@@ -2254,10 +2347,11 @@ $(SIGNATURES)
 
 Get the Strophe connection which is assigned to this certificate.
 
-Parameters:
+# Arguments
 * `cert` a Strophe TLS certificate object
 
-Returns the Strophe connection object where this certificate originates from
+# Returns
+The Strophe connection object where this certificate originates from
 """
 function xmpp_tlscert_get_conn(cert)
     return ccall((:xmpp_tlscert_get_conn, libstrophe), Ptr{xmpp_conn_t}, (Ptr{xmpp_tlscert_t},), cert)
@@ -2268,10 +2362,11 @@ $(SIGNATURES)
 
 Get the complete PEM of this certificate.
 
-Parameters:
+# Arguments
 * `cert` a Strophe TLS certificate object
 
-Returns a string containing the PEM of this certificate
+# Returns
+A string containing the PEM of this certificate
 """
 function xmpp_tlscert_get_pem(cert)
     return ccall((:xmpp_tlscert_get_pem, libstrophe), Ptr{Cchar}, (Ptr{xmpp_tlscert_t},), cert)
@@ -2284,11 +2379,12 @@ Get the dnsName entries out of the SubjectAlternativeNames.
 
 Note: Max. MAX_NUM_DNSNAMES are supported.
 
-Parameters:
+# Arguments
 * `cert` a Strophe TLS certificate object
 * `n` which dnsName entry
 
-Returns a string with the n'th dnsName
+# Returns
+A string with the n'th dnsName
 """
 function xmpp_tlscert_get_dnsname(cert, n)
     return ccall((:xmpp_tlscert_get_dnsname, libstrophe), Ptr{Cchar}, (Ptr{xmpp_tlscert_t}, Csize_t), cert, n)
@@ -2301,11 +2397,12 @@ Get various parts of the certificate as String.
 
 c.f. [`xmpp_cert_element_t`](@ref) for details.
 
-Parameters:
+# Arguments
 * `cert` a Strophe TLS certificate object
 * `elmnt` which part of the certificate
 
-Returns a string with the part of the certificate
+# Returns
+A string with the part of the certificate
 """
 function xmpp_tlscert_get_string(cert, elmnt)
     return ccall((:xmpp_tlscert_get_string, libstrophe), Ptr{Cchar}, (Ptr{xmpp_tlscert_t}, xmpp_cert_element_t), cert, elmnt)
@@ -2318,10 +2415,11 @@ Get a descriptive string for each xmpp_cert_element_t.
 
 c.f. [`xmpp_cert_element_t`](@ref) for details.
 
-Parameters:
+# Arguments
 * `elmnt` which part of the certificate
 
-Returns a string with the description
+# Returns
+A string with the description
 """
 function xmpp_tlscert_get_description(elmnt)
     return ccall((:xmpp_tlscert_get_description, libstrophe), Ptr{Cchar}, (xmpp_cert_element_t,), elmnt)
@@ -2332,7 +2430,7 @@ $(SIGNATURES)
 
 Free a certificate object.
 
-Parameters:
+# Arguments
 * `cert` a Strophe TLS certificate object
 """
 function xmpp_tlscert_free(cert)
@@ -2352,14 +2450,16 @@ $(SIGNATURES)
 
 Compute SHA1 message digest.
 
-Returns an allocated string which represents SHA1 message digest in hexadecimal notation. The string must be freed with [`xmpp_free`](@ref).
+# Returns
+An allocated string which represents SHA1 message digest in hexadecimal notation. The string must be freed with [`xmpp_free`](@ref).
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `data` buffer for digest computation
 * `len` size of the data buffer
 
-Returns an allocated string or `C_NULL` on allocation error
+# Returns
+An allocated string or `C_NULL` on allocation error
 """
 function xmpp_sha1(ctx, data, len)
     return ccall((:xmpp_sha1, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cuchar}, Csize_t), ctx, data, len)
@@ -2372,7 +2472,7 @@ Compute SHA1 message digest.
 
 Stores digest in user's buffer which must be at least XMPP_SHA1_DIGEST_SIZE bytes long.
 
-Parameters:
+# Arguments
 * `data` buffer for digest computation
 * `len` size of the data buffer
 * `digest` output buffer of XMPP_SHA1_DIGEST_SIZE bytes
@@ -2397,10 +2497,11 @@ digest = LibStrophe.xmpp_sha1_to_string_alloc(sha1)
 xmpp_sha1_free(sha1)
 ```
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 
-Returns new SHA1 object
+# Returns
+New SHA1 object
 """
 function xmpp_sha1_new(ctx)
     return ccall((:xmpp_sha1_new, libstrophe), Ptr{xmpp_sha1_t}, (Ptr{xmpp_ctx_t},), ctx)
@@ -2411,7 +2512,7 @@ $(SIGNATURES)
 
 Destroy SHA1 object.
 
-Parameters:
+# Arguments
 * `sha1` a SHA1 object
 """
 function xmpp_sha1_free(sha1)
@@ -2425,7 +2526,7 @@ Update SHA1 context with the next portion of data.
 
 Can be called repeatedly.
 
-Parameters:
+# Arguments
 * `sha1` a SHA1 object
 * `data` pointer to a buffer to be hashed
 * `len` size of the data buffer
@@ -2441,7 +2542,7 @@ Finish SHA1 computation.
 
 Don't call [`xmpp_sha1_update`](@ref) after this function. Retrieve resulting message digest with [`xmpp_sha1_to_string`](@ref) or [`xmpp_sha1_to_digest`](@ref).
 
-Parameters:
+# Arguments
 * `sha1` a SHA1 object
 """
 function xmpp_sha1_final(sha1)
@@ -2455,12 +2556,13 @@ Return message digest rendered as a string.
 
 Stores the string to a user's buffer and returns the buffer. Call this function after [`xmpp_sha1_final`](@ref).
 
-Parameters:
+# Arguments
 * `sha1` a SHA1 object
 * `s` output string
 * `slen` size reserved for the string including '\0'
 
-Returns pointer `s` or `C_NULL` if resulting string is bigger than slen bytes
+# Returns
+Pointer `s` or `C_NULL` if resulting string is bigger than slen bytes
 """
 function xmpp_sha1_to_string(sha1, s, slen)
     return ccall((:xmpp_sha1_to_string, libstrophe), Ptr{Cchar}, (Ptr{xmpp_sha1_t}, Ptr{Cchar}, Csize_t), sha1, s, slen)
@@ -2471,12 +2573,14 @@ $(SIGNATURES)
 
 Return message digest rendered as a string.
 
-Returns an allocated string. Free the string by calling [`xmpp_free`](@ref) using the Strophe context which is passed to [`xmpp_sha1_new`](@ref). Call this function after [`xmpp_sha1_final`](@ref).
+# Returns
+An allocated string. Free the string by calling [`xmpp_free`](@ref) using the Strophe context which is passed to [`xmpp_sha1_new`](@ref). Call this function after [`xmpp_sha1_final`](@ref).
 
-Parameters:
+# Arguments
 * `sha1` a SHA1 object
 
-Returns an allocated string
+# Returns
+An allocated string
 """
 function xmpp_sha1_to_string_alloc(sha1)
     return ccall((:xmpp_sha1_to_string_alloc, libstrophe), Ptr{Cchar}, (Ptr{xmpp_sha1_t},), sha1)
@@ -2487,7 +2591,7 @@ $(SIGNATURES)
 
 Stores message digest to a user's buffer.
 
-Parameters:
+# Arguments
 * `sha1` a SHA1 object
 * `digest` output buffer of `XMPP_SHA1_DIGEST_SIZE` bytes
 """
@@ -2500,14 +2604,16 @@ $(SIGNATURES)
 
 Base64 encoding routine.
 
-Returns an allocated string which must be freed with [`xmpp_free`](@ref).
+# Returns
+An allocated string which must be freed with [`xmpp_free`](@ref).
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `data` buffer to encode
 * `len` size of the data buffer
 
-Returns an allocated null-terminated string or `C_NULL` on error
+# Returns
+An allocated null-terminated string or `C_NULL` on error
 """
 function xmpp_base64_encode(ctx, data, len)
     return ccall((:xmpp_base64_encode, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cuchar}, Csize_t), ctx, data, len)
@@ -2518,14 +2624,16 @@ $(SIGNATURES)
 
 Base64 decoding routine.
 
-Returns an allocated string which must be freed with [`xmpp_free`](@ref). User calls this function when the result must be a string. When decoded buffer contains '\0' NULL is returned.
+# Returns
+An allocated string which must be freed with [`xmpp_free`](@ref). User calls this function when the result must be a string. When decoded buffer contains '\0' NULL is returned.
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `base64` encoded buffer
 * `len` size of the buffer
 
-Returns an allocated null-terminated string or `C_NULL` on error
+# Returns
+An allocated null-terminated string or `C_NULL` on error
 """
 function xmpp_base64_decode_str(ctx, base64, len)
     return ccall((:xmpp_base64_decode_str, libstrophe), Ptr{Cchar}, (Ptr{xmpp_ctx_t}, Ptr{Cchar}, Csize_t), ctx, base64, len)
@@ -2536,10 +2644,11 @@ $(SIGNATURES)
 
 Base64 decoding routine.
 
-Returns an allocated buffer which must be freed with [`xmpp_free`](@ref).
+# Returns
+An allocated buffer which must be freed with [`xmpp_free`](@ref).
 
-Parameters:
-* `ctx` a Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `base64` encoded buffer
 * `len` size of the encoded buffer
 * `out` allocated buffer is stored here
@@ -2564,8 +2673,8 @@ const xmpp_rand_t = _xmpp_rand_t
 
 Create new [`xmpp_rand_t`](@ref) object.
 
-Parameters:
-* `ctx`: A Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 """
 function xmpp_rand_new(ctx)
     return ccall((:xmpp_rand_new, libstrophe), Ptr{xmpp_rand_t}, (Ptr{xmpp_ctx_t},), ctx)
@@ -2576,8 +2685,8 @@ end
 
 Destroy an [`xmpp_rand_t`](@ref) object.
 
-Parameters
-* `ctx`: A Strophe context object
+# Arguments
+$(_arg(_g, [:ctx]))
 * `rand`: A [`xmpp_rand_t`](@ref) object
 """
 function xmpp_rand_free(ctx, rand)
@@ -2599,7 +2708,7 @@ end
 
 Generate random bytes. Generates len bytes and stores them to the output buffer.
 
-Parameters:
+# Arguments
 * `rand`: A [`xmpp_rand_t`](@ref) object
 * `output`: A buffer where a len random bytes will be placed.
 * `len`: Number of bytes reserved for the output..
@@ -2613,7 +2722,7 @@ end
 
 Generate a nonce that is printable randomized string. This function doesn't allocate memory and doesn't fail.
 
-Parameters:
+# Arguments
 * `rand`: A [`xmpp_rand_t`](@ref) object
 * `output`: A buffer where a NULL-terminated string will be placed. The string will contain len-1 printable symbols.
 * `len`: Number of bytes reserved for the output string, including end of line '\\0'.

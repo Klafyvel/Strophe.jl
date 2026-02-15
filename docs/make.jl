@@ -40,7 +40,7 @@ const titles = Dict(
     "high-level-api/examples" => "Examples",
 )
 
-function recursively_list_pages(folder; path_prefix = "")
+function recursively_list_pages(folder, skip = []; path_prefix = "")
     pages_list = Any[]
     addindex = false
     for file in readdir(folder)
@@ -54,9 +54,11 @@ function recursively_list_pages(folder; path_prefix = "")
         # full path of the file
         fullpath = joinpath(folder, file)
 
-        if isdir(fullpath)
+        if relpath ∈ skip
+            continue
+        elseif isdir(fullpath)
             # If this is a folder, enter the recursion case
-            subsection = recursively_list_pages(fullpath; path_prefix = relpath)
+            subsection = recursively_list_pages(fullpath, skip; path_prefix = relpath)
 
             # Ignore empty folders
             if length(subsection) > 0
@@ -88,9 +90,9 @@ function recursively_list_pages(folder; path_prefix = "")
     end
 end
 
-function list_pages()
+function list_pages(skip = [])
     root_dir = joinpath(@__DIR__, "src")
-    pages_list = recursively_list_pages(root_dir)
+    pages_list = recursively_list_pages(root_dir, skip)
     return pages_list
 end
 
@@ -102,13 +104,17 @@ Changelog.generate(
     repo = "Klafyvel/Strophe.jl",           # default repository for links
 )
 
+skip = ["high-level-api/examples/bot.md", "high-level-api/examples/logging.md"]
+
 makedocs(;
     modules = [Strophe],
     authors = "klafyvel <hugo@klafyvel.me>",
     repo = "https://github.com/Klafyvel/Strophe.jl/blob/{commit}{path}#{line}",
     sitename = "Strophe.jl",
     format = Documenter.HTML(; canonical = "https://klafyvel.github.io/Strophe.jl"),
-    pages = list_pages(),
+    pages = list_pages(skip),
+    pagesonly = true,
+    warnonly = true,
 )
 
 deploydocs(; repo = "github.com/Klafyvel/Strophe.jl")

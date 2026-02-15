@@ -12,7 +12,7 @@ Pages = ["95-reference.md"]
 Strophe.StropheError
 ```
 
-## Context handling
+## Context Handling
 
 ```@docs
 Strophe.Context
@@ -67,7 +67,7 @@ Strophe.presence
 Strophe.stream_error
 ```
 
-## Connection handling
+## Connection Handling
 
 ```@docs
 Strophe.ParametrizedConnection

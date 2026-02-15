@@ -32,4 +32,4 @@ logger(
     Base.unsafe_convert(Cstring, Base.cconvert(Cstring, msg))
 )
 
-const default_julia_logger = Ref{LibStrophe.xmpp_log_t}()
+const DEFAULT_JULIA_LOGGER = Ref{LibStrophe.xmpp_log_t}()

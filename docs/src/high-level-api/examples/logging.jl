@@ -12,32 +12,32 @@ You may want to start there if you are just starting.
 # the preparations already!
 
 import Strophe
-import Strophe: ClientConnection, LibStrophe, connect, disconnect, trusttls!, jid!, pass!, context, stop, run
+import Strophe: LibStrophe
 using Logging
 
 function connection_handler(conn, status, error, stream_error)
     if status == LibStrophe.XMPP_CONN_CONNECT # We just connected
         @info "Connected!"
-        disconnect(conn)
+        Strophe.disconnect(conn)
     else
         @info "Disconnected!"
-        stop(conn) # stop the event loop
+        Strophe.stop(conn) # stop the event loop
     end
     return nothing
 end
-conn = ClientConnection(host = "localhost", handler = connection_handler)
-trusttls!(conn)
+conn = Strophe.ClientConnection(host = "localhost", handler = connection_handler)
+Strophe.trusttls!(conn)
 jid = "gepetto@localhost"
 password = "plopiplop"
-jid!(conn, jid)
-pass!(conn, password)
+Strophe.jid!(conn, jid)
+Strophe.pass!(conn, password)
 
 # ## Connection
 # This time, let's have a logger to intercept even debug-level logs!
 debuglogger = ConsoleLogger(stderr, Logging.Debug)
 with_logger(debuglogger) do
-    connect(conn) # Will raise a StropheError if connection fails.
-    run(conn) # Run the internal event loop from libstrophe
+    Strophe.connect(conn) # Will raise a StropheError if connection fails.
+    Strophe.run(conn) # Run the internal event loop from libstrophe
 end
 
 # This was **very** verbose! Strophe.jl replaces the default logger of libstrophe
@@ -70,8 +70,8 @@ function meta_formatter(level::LogLevel, _module, group, id, file, line)
 end
 debuglogger = ConsoleLogger(stderr, Logging.Debug; meta_formatter)
 with_logger(debuglogger) do
-    connect(conn) # Will raise a StropheError if connection fails.
-    run(conn) # Run the internal event loop from libstrophe
+    Strophe.connect(conn) # Will raise a StropheError if connection fails.
+    Strophe.run(conn) # Run the internal event loop from libstrophe
 end
 
 # Now, each log statement also contains the group. However we can do better, for
@@ -87,8 +87,8 @@ debuglogger = EarlyFilteredLogger(debuglogger) do (level, _module, group, id)
     return (_module == Strophe && group == selected_group) || (_module != Strophe)
 end
 with_logger(debuglogger) do
-    connect(conn) # Will raise a StropheError if connection fails.
-    run(conn) # Run the internal event loop from libstrophe
+    Strophe.connect(conn) # Will raise a StropheError if connection fails.
+    Strophe.run(conn) # Run the internal event loop from libstrophe
 end
 
 # We now have a logger that only handles `conn` events!

@@ -8,8 +8,7 @@ Julia's native logging system.
 mutable struct Context
     ctx::Ptr{LibStrophe.xmpp_ctx_t}
     function Context()
-        # log = LibStrophe.xmpp_get_default_logger(LibStrophe.XMPP_LEVEL_INFO)
-        _ctx = LibStrophe.xmpp_ctx_new(C_NULL, default_julia_logger)
+        _ctx = LibStrophe.xmpp_ctx_new(C_NULL, DEFAULT_JULIA_LOGGER)
         ctx = new(_ctx)
         finalizer(ctx) do ctx
             if ctx.ctx ≠ C_NULL

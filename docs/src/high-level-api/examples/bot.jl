@@ -15,7 +15,8 @@ If you need a simpler example on how to set-up a basic connection, you can read
 first [the basic example](@ref high-level-basic-example) page.
 
 =#
-import Strophe: LibStrophe
+import Strophe
+import Strophe: LibStrophe, Stanza, ClientConnection
 
 # ## Boilerplate
 # We want some facilities to listen to our xmpp server. The idea is quite simple:
