@@ -25,6 +25,7 @@ function __init__()
         (Ptr{Cvoid}, LibStrophe.xmpp_log_level_t, Cstring, Cstring)
     )
     DEFAULT_JULIA_LOGGER[] = LibStrophe.xmpp_log_t(logger_c, C_NULL)
+    DEFAULT_CONTEXT[] = Context()
     return nothing
 end
 

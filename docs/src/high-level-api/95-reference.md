@@ -16,6 +16,7 @@ Strophe.StropheError
 
 ```@docs
 Strophe.Context
+Strophe.DEFAULT_CONTEXT
 Strophe.context
 Strophe.run
 Strophe.run_once

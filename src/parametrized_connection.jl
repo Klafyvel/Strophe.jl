@@ -3,8 +3,10 @@ default_connection_handler(args...) = nothing
 """
 ```julia
 ParametrizedConnection(conn::ParametrizedConnection)
-ParametrizedConnection(; type::LibStrophe.xmpp_conn_type_t, conn::Union{Nothing, Connection} = nothing, ctx::Context = Context(), host = "", port = 0, handler = default_connection_handler)
+ParametrizedConnection(; type::LibStrophe.xmpp_conn_type_t, conn::Union{Nothing, Connection} = nothing, ctx::Context = context(), host = "", port = 0, handler = default_connection_handler)
 ```
+
+A wrapper around a [`Connection`](@ref) to remember the kind of connection, the host to connect to, the port, and the handler.
 
 $(TYPEDFIELDS)
 
@@ -13,7 +15,6 @@ See also [`ClientConnection`](@ref), [`ComponentConnection`](@ref), [`connect`](
 mutable struct ParametrizedConnection
     type::LibStrophe.xmpp_conn_type_t
     conn::Connection
-    ctx::Context
     host::String
     port::Int32
     handler::FunctionWrappers.FunctionWrapper{Nothing, Tuple{ParametrizedConnection, LibStrophe.xmpp_conn_event_t, Int32, Ptr{LibStrophe.xmpp_stream_error_t}}}
@@ -28,10 +29,10 @@ end
 const connection_handler_c = Ref{Ptr{Cvoid}}(0)
 
 connection(c::ParametrizedConnection) = connection(c.conn)
-context(c::ParametrizedConnection) = context(c.ctx)
+context(c::ParametrizedConnection) = context(c.conn)
 
 """
-$(SIGNATURES)
+    ClientConnection(; kwargs...)
 
 Build a [`ParametrizedConnection`](@ref) for a client connection (`type` set to
 `LibStrophe.XMPP_CLIENT`.
@@ -40,7 +41,7 @@ See also [`ParametrizedConnection`](@ref), [`ComponentConnection`](@ref).
 """
 ClientConnection(; kwargs...) = ParametrizedConnection(; type = LibStrophe.XMPP_CLIENT, kwargs...)
 """
-$(SIGNATURES)
+    ComponentConnection(; kwargs...)
 
 Build a [`ParametrizedConnection`](@ref) for a client connection (`type` set to
 `LibStrophe.XMPP_COMPONENT`.
@@ -49,31 +50,31 @@ See also [`ParametrizedConnection`](@ref), [`ClientConnection`](@ref).
 """
 ComponentConnection(; kwargs...) = ParametrizedConnection(; type = LibStrophe.XMPP_COMPONENT, kwargs...)
 """
-$(SIGNATURES)
+    ClientConnection(conn)
 
 Clone an existing connection to create a client connection.
 
 See also [`LibStrophe.xmpp_conn_clone`](@ref).
 """
 function ClientConnection(conn::ParametrizedConnection)
-    return ParametrizedConnection(LibStrophe.XMPP_CLIENT, Connection(conn.conn), conn.ctx, conn.host, conn.port, conn.handler)
+    return ParametrizedConnection(LibStrophe.XMPP_CLIENT, Connection(conn.conn), conn.host, conn.port, conn.handler)
 end
 """
-$(SIGNATURES)
+    ComponentConnection(conn)
 
 Clone an existing connection to create a component connection.
 
 See also [`LibStrophe.xmpp_conn_clone`](@ref).
 """
 function ComponentConnection(conn::ParametrizedConnection)
-    return ParametrizedConnection(LibStrophe.XMPP_COMPONENT, Connection(conn.conn), conn.ctx, conn.host, conn.port, conn.handler)
+    return ParametrizedConnection(LibStrophe.XMPP_COMPONENT, Connection(conn.conn), conn.host, conn.port, conn.handler)
 end
 function ParametrizedConnection(conn::ParametrizedConnection)
-    return ParametrizedConnection(conn.type, Connection(conn.conn), conn.ctx, conn.host, conn.port, conn.handler)
+    return ParametrizedConnection(conn.type, Connection(conn.conn), conn.host, conn.port, conn.handler)
 end
-function ParametrizedConnection(; type::LibStrophe.xmpp_conn_type_t, conn::Union{Nothing, Connection} = nothing, ctx::Context = Context(), host = "", port = 0, handler = default_connection_handler)
+function ParametrizedConnection(; type::LibStrophe.xmpp_conn_type_t, conn::Union{Nothing, Connection} = nothing, ctx::Context = context(), host = "", port = 0, handler = default_connection_handler)
     conn = isnothing(conn) ? Connection(ctx) : conn
-    return ParametrizedConnection(type, conn, ctx, host, port, handler)
+    return ParametrizedConnection(type, conn, host, port, handler)
 end
 
 function Base.show(io::IO, conn::ParametrizedConnection)
@@ -97,7 +98,7 @@ function Base.show(io::IO, conn::ParametrizedConnection)
 end
 
 """
-$(SIGNATURES)
+    connect(conn)
 
 Initiate the connection parametrized by `conn`.
 
@@ -120,11 +121,11 @@ function connect(conn::ParametrizedConnection)
     if status == LibStrophe.XMPP_EOK
         return nothing
     else
-        throw(StropheError("Error while connecting client."))
+        throw(StropheError("Error while connecting client (status $(status))."))
     end
 end
 """
-$(SIGNATURES)
+    disconnect(conn)
 
 Initiate the connection parametrized by `conn`.
 
@@ -134,3 +135,5 @@ function disconnect(obj)
     LibStrophe.xmpp_disconnect(connection(obj))
     return nothing
 end
+
+const ConnectionTypes = Union{Ptr{LibStrophe.xmpp_conn_t}, Connection, ParametrizedConnection}

@@ -19,23 +19,32 @@ mutable struct Context
         return ctx
     end
 end
+
 """
-    context(obj)
+The default context provided by the library.
+"""
+const DEFAULT_CONTEXT = Ref{Context}()
+
+"""
+    context([obj])
 
 Get the pointer to the [`LibStrophe.xmpp_ctx_t`](@ref) object associated to `obj`.
+If called without argument, return the default context.
 """
 context(ctx::Context) = ctx.ctx
 context(ctx::Ptr{LibStrophe.xmpp_ctx_t}) = ctx
 context(ctx::Ptr{Cvoid}) = ctx
+context() = DEFAULT_CONTEXT[]
 
 """
-$(SIGNATURES)
+    run([obj])
 
-Run the internal libstrophe main loop in the context related to `obj` until it
-is stopped by a [`stop`](@ref) call. This is not directly wrapping the internal
-[`LibStrophe.xmpp_run`](@ref) function. Instead, it is a nearly-identical rewrite
-that introduces a `yield()` call after each [`LibStrophe.xmpp_run_once`](@ref)
-call, allowing other tasks to be run.
+Run the internal libstrophe main loop in the context related to `obj` (or the
+default context is none is provided) until it is stopped by a [`stop`](@ref)
+call. This is not directly wrapping the internal [`LibStrophe.xmpp_run`](@ref)
+function. Instead, it is a nearly-identical rewrite that introduces a `yield()`
+call after each [`LibStrophe.xmpp_run_once`](@ref) call, allowing other tasks
+to be run.
 
 !!! warn
     This does **not** make the library thread-safe, and all Strophe-related things
@@ -68,12 +77,14 @@ function run(obj)
     logger(LibStrophe.XMPP_LEVEL_DEBUG, "event", "Event loop completed.")
     return nothing
 end
+run() = run(context())
 """
-$(SIGNATURES)
+    run_once([obj,] timeout)
 
 Run one iteration of the internal libstrophe main loop in the context related
-to `obj`. Will send queued data, and go through the event loop once. It will wait
-no more than `timeout` milliseconds.
+to `obj`, or the default context if none is provided. Will send queued data,
+and go through the event loop once. It will wait no more than `timeout`
+milliseconds.
 
 See also [`run`](@ref), [`LibStrophe.xmpp_run_once`](@ref).
 """
@@ -81,10 +92,11 @@ function run_once(obj, timeout)
     LibStrophe.xmpp_run_once(context(obj), timeout)
     return nothing
 end
+run_once(timeout) = run_once(context(), timeout)
 """
-$(SIGNATURES)
+    stop([obj])
 
-Stop the main loop triggered by [`run`](@ref).
+Stop the main loop triggered by [`run`](@ref), using the default context by default.
 
 See also [`run`](@ref), [`LibStrophe.xmpp_stop`](@ref).
 """
@@ -92,10 +104,12 @@ function stop(obj)
     LibStrophe.xmpp_stop(context(obj))
     return nothing
 end
+stop() = stop(context())
 """
-$(SIGNATURES)
+    timeout!([obj, ], timeout)
 
-Set the `timeout` in milliseconds to use when calling [`run`](@ref).
+Set the `timeout` in milliseconds to use when calling [`run`](@ref). Use the
+default context by default.
 
 See also [`run`](@ref), [`LibStrophe.xmpp_ctx_set_timeout`](@ref).
 """
@@ -103,3 +117,4 @@ function timeout!(obj, timeout)
     LibStrophe.xmpp_ctx_set_timeout(context(obj), timeout)
     return nothing
 end
+timeout!(timeout) = timeout!(context(), timeout)

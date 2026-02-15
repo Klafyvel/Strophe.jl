@@ -3,10 +3,12 @@ Wraps a pointer to a libstrophe stanza, handling release at finalization.
 
 # Constructors
 
+    Stanza()
     Stanza(ctx)
     Stanza(ctx; text)
     Stanza(ctx; name, attributes...)
 Construct a stanza by extracting the context of `ctx` using [`context`](@ref).
+Defaults to using the default context.
 The `name` keyword will make constructor call [`name!`](@ref) function on the
 stanza and make it a tag stanza. The other keyword arguments `attributes`.
 should be of type `AbstractString` and will be passed to `setindex!`, and require
@@ -14,9 +16,9 @@ the `name` keyword argument. The `text` keyword will make the constructor
 call the [`text!`](@ref) function on the stanza and make it a text stanza. This
 keyword arguments thus excludes the use of others.
 
-    Stanza(ctx, str::String)
+    Stanza([ctx,] str::String)
 Construct a stanza from the given string. Will throw a [`StropheError`](@ref) on
-failure.
+failure. Defaults to using the default context.
 See also [`LibStrophe.xmpp_stanza_new_from_string`](@ref).
 
     Stanza(stanza::Stanza)
@@ -61,36 +63,35 @@ Here are two ways of creating the `<iq/>` following stanza (inspired by the
 
 First manually:
 ```julia
-Stanza(ctx,
-       name="iq", type="result",
+Stanza(name="iq", type="result",
        to="romeo@example.net", from="juliet@example.com",
        id="version_1")(
-    Stanza(ctx, name="query", xmlns="jabber:iq:version")(
-        Stanza(ctx, name="name")("LibStrophe example bot"),
-        Stanza(ctx, name="version")("1.0")
+    Stanza(name="query", xmlns="jabber:iq:version")(
+        Stanza(name="name")("LibStrophe example bot"),
+        Stanza(name="version")("1.0")
     )
 )
 ```
 Alternatively, using convenience constructors and functions:
 ```julia
-iq(ctx, type="result", id="version_1")(
-    Stanza(ctx, name="query", xmlns="jabber:iq:version")(
-        Stanza(ctx, name="name")("LibStrophe example bot"),
-        Stanza(ctx, name="version")("1.0")
+iq(type="result", id="version_1")(
+    Stanza(name="query", xmlns="jabber:iq:version")(
+        Stanza(name="name")("LibStrophe example bot"),
+        Stanza(name="version")("1.0")
     )
 )
 ```
 Note that you can also build the stanza bits by bits:
 ```julia
-s = iq(ctx, type="result")
+s = iq(type="result")
 id!(s, "version_1")
 to!(s, "romeo@example.net")
 from!(s, "juliet@example.com")
-query = Stanza(ctx)
+query = Stanza()
 name!(query, "query")
 ns!(query, "jabber:iq:version")
-name = Stanza(ctx, name="name")("LibStrophe example bot")
-version = Stanza(ctx, name="version")("1.0")
+name = Stanza(name="name")("LibStrophe example bot")
+version = Stanza(name="version")("1.0")
 child!(query, name)
 child!(query, version)
 child!(iq, query)
@@ -106,16 +107,18 @@ See also [`iq`](@ref), [`id!`](@ref), [`to!`](@ref), [`from!`](@ref), [`name!`](
 mutable struct Stanza
     stanza::Ptr{LibStrophe.xmpp_stanza_t}
     released::Bool
-    function Stanza(stanza::Ptr{LibStrophe.xmpp_stanza_t}, released::Bool = false)
-        obj = new(stanza, released)
-        Base.finalizer(obj) do obj
-            if stanza(obj) ≠ C_NULL && !obj.released
-                release!(obj)
+    function Stanza(s::Ptr{LibStrophe.xmpp_stanza_t}, released::Bool = false)
+        obj = new(s, released)
+        Base.finalizer(obj) do s::Stanza
+            if stanza(s) ≠ C_NULL && !s.released
+                release!(s)
             end
         end
         return obj
     end
 end
+
+const StanzaTypes = Union{Stanza, Ptr{LibStrophe.xmpp_stanza_t}}
 
 """
     stanza(obj)
@@ -131,7 +134,9 @@ end
 stanza(obj::Ptr{LibStrophe.xmpp_stanza_t}) = obj
 stanza(obj::Ptr{Cvoid}) = obj
 context(obj::Stanza) = LibStrophe.xmpp_stanza_get_context(stanza(obj))
+context(obj::Ptr{LibStrophe.xmpp_stanza_t}) = LibStrophe.xmpp_stanza_get_context(obj)
 
+Stanza(; kwargs...) = Stanza(context(); kwargs...)
 function Stanza(obj; kwargs...)
     has_name = haskey(kwargs, :name)
     has_text = haskey(kwargs, :text)
@@ -140,18 +145,22 @@ function Stanza(obj; kwargs...)
     ctx = context(obj)
     stanza = LibStrophe.xmpp_stanza_new(ctx)
     if has_name
-        name = pop!(kwargs, :name)
+        name = kwargs[:name]
         name!(stanza, name)
         for (k, v) in kwargs
-            stanza[string(k)] = v
+            if k == :name
+                continue
+            else
+                stanza[string(k)] = v
+            end
         end
     elseif has_text
-        text = pop!(kwargs, :text)
-        text!(stanza, text)
+        text!(stanza, kwargs[:text])
     end
-    return stanza
+    return Stanza(stanza, false)
 end
 
+Stanza(s::String) = Stanza(context(), s)
 function Stanza(ctx, s::String)
     stanza = LibStrophe.xmpp_stanza_new_from_string(context(ctx), s)
     if stanza == C_NULL
@@ -214,7 +223,7 @@ function render_to_string(obj)
     end
     return_cstring = unsafe_load(buf)
     return_string = unsafe_string(return_cstring)
-    LibStrophe.xmpp_free(context(s), return_cstring)
+    LibStrophe.xmpp_free(context(s), convert(Ptr{Cvoid}, return_cstring))
     return return_string
 end
 
@@ -246,7 +255,7 @@ end
 
 """
     child(stanza, name)
-Get the first child of `stanza` named `name`. Throws `KeyError` if none is found.
+Get the first child of `stanza` named `name`, or return `nothing` if none is found.
 
 See also [`LibStrophe.xmpp_stanza_get_child_by_name`](@ref).
 """
@@ -254,15 +263,16 @@ function child(obj, name::AbstractString)
     s = stanza(obj)
     found = LibStrophe.xmpp_stanza_get_child_by_name(s, name)
     if found == C_NULL
-        throw(KeyError("Did not find a child named $(name) in the given stanza."))
+        return nothing
+    else
+        return Stanza(found, true)
     end
-    return Stanza(found, true)
 end
 
 """
     child(stanza, name, ns)
-Get the first child of `stanza` named `name` and in namespace `ns`. Throws
-`KeyError` if none is found.
+Get the first child of `stanza` named `name` and in namespace `ns`, or return
+nothing if none is found.
 
 See also [`LibStrophe.xmpp_stanza_get_child_by_name_and_ns`](@ref).
 """
@@ -270,34 +280,43 @@ function child(obj, name::AbstractString, ns::AbstractString)
     s = stanza(obj)
     found = LibStrophe.xmpp_stanza_get_child_by_name_and_ns(s, name, ns)
     if found == C_NULL
-        throw(KeyError("Did not find a child named $(name) with namespace $(ns) in the given stanza."))
+        return nothing
+    else
+        return Stanza(found, true)
     end
-    return Stanza(found, true)
 end
 
 """
     child(stanza; name, ns)
-Get the first child of `stanza` named `name` and in namespace `ns`. Throws
-`KeyError` if none is found. Both keywords can be specified, and at least one
+Get the first child of `stanza` named `name` and in namespace `ns`, or return
+`nothing` if none is found. Both keywords can be specified, and at least one
 must be specified.
 
 See also [`LibStrophe.xmpp_stanza_get_child_by_name`](@ref), [`LibStrophe.xmpp_stanza_get_child_by_ns`](@ref), [`LibStrophe.xmpp_stanza_get_child_by_name_and_ns`](@ref).
 """
-function child(obj; name::Union{AbstractString, Nothing}, ns::Union{AbstractString, Nothing})
-    isnothing(name) && isnothing(ns) && throw(ArgumentError("At least one keyword argument `name` or `ns` must be specified."))
-    if isnothing(ns)
-        return child(obj, name)
-    elseif isnothing(name)
+function child(obj; kwargs...)
+    has_ns = haskey(kwargs, :ns)
+    has_name = haskey(kwargs, :name)
+    if !has_ns && has_name
+        return child(obj, kwargs[:name])
+    elseif has_ns && !has_name
+        ns = kwargs[:ns]
         s = stanza(obj)
         found = LibStrophe.xmpp_stanza_get_child_by_ns(s, ns)
         if found == C_NULL
-            throw(KeyError("Did not find a child namespace $(ns) in the given stanza."))
+            return nothing
+        else
+            return Stanza(found, true)
         end
-        return Stanza(found, true)
+    elseif !has_ns && !has_name
+        throw(ArgumentError("At least one keyword argument `name` or `ns` must be specified."))
     else
+        name = kwargs[:name]
+        ns = kwargs[:ns]
         return child(obj, name, ns)
     end
 end
+
 
 """
     siblings(stanza)
@@ -344,7 +363,7 @@ exist.
 
 See also [`LibStrophe.xmpp_stanza_get_attribute`](@ref).
 """
-function Base.getindex(obj::Union{Ptr{LibStrophe.xmpp_stanza_t}, Stanza}, attribute::AbstractString)
+function Base.getindex(obj::StanzaTypes, attribute::AbstractString)
     ret = LibStrophe.xmpp_stanza_get_attribute(stanza(obj), attribute)
     if ret == C_NULL
         throw(KeyError("No attribute $(attribute) found in stanza."))
@@ -360,7 +379,7 @@ Return the list of attributes defined for the `stanza`.
 
 See also [`LibStrophe.xmpp_stanza_get_attribute_count`](@ref), [`LibStrophe.xmpp_stanza_get_attributes`](@ref), [`Base.pairs`](@ref).
 """
-function Base.keys(obj::Union{Ptr{LibStrophe.xmpp_stanza_t}, Stanza})
+function Base.keys(obj::StanzaTypes)
     return map(first, pairs(obj))
 end
 
@@ -371,7 +390,7 @@ Return the list of attributes defined for the `stanza`.
 
 See also [`LibStrophe.xmpp_stanza_get_attribute_count`](@ref), [`LibStrophe.xmpp_stanza_get_attributes`](@ref), [`Base.pairs`](@ref).
 """
-function Base.values(obj::Union{Ptr{LibStrophe.xmpp_stanza_t}, Stanza})
+function Base.values(obj::StanzaTypes)
     return map(last, pairs(obj))
 end
 
@@ -381,7 +400,7 @@ Return the an array of attribute `key=>value` pairs.
 
 See also [`LibStrophe.xmpp_stanza_get_attribute_count`](@ref), [`LibStrophe.xmpp_stanza_get_attributes`](@ref), [`Base.pairs`](@ref).
 """
-function Base.pairs(obj::Union{Ptr{LibStrophe.xmpp_stanza_t}, Stanza})
+function Base.pairs(obj::StanzaTypes)
     s = stanza(obj)
     number_of_attributes = LibStrophe.xmpp_stanza_get_attribute_count(s)
     attribute_pointers = Array{Ptr{Cchar}, 1}(undef, 2number_of_attributes)
@@ -431,7 +450,7 @@ failure.
 
 See also [`LibStrophe.xmpp_stanza_set_attribute`](@ref).
 """
-function Base.setindex!(obj::Union{Ptr{LibStrophe.xmpp_stanza_t}, Stanza}, value::AbstractString, key::AbstractString)
+function Base.setindex!(obj::StanzaTypes, value::AbstractString, key::AbstractString)
     s = stanza(obj)
     r = LibStrophe.xmpp_stanza_set_attribute(s, key, value)
     if r < 0
@@ -490,7 +509,7 @@ Delete the `attribute` of `stanza`.
 
 See also [`LibStrophe.xmpp_stanza_del_attribute`](@ref).
 """
-function Base.delete!(obj::Union{Ptr{LibStrophe.xmpp_stanza_t}, Stanza}, attribute::AbstractString)
+function Base.delete!(obj::StanzaTypes, attribute::AbstractString)
     s = stanza(obj)
     r = LibStrophe.xmpp_stanza_del_attribute(s, attribute)
     if r < 0
@@ -502,19 +521,24 @@ end
 """
 $(SIGNATURES)
 
-Get the namespace attribute of `stanza`. Return the string with the 'xmlns' attribute value.
+Get the namespace attribute of `stanza`. Return the string with the 'xmlns'
+attribute value, or nothing if it does not exist.
 
 See also [`ns!`](@ref), [`LibStrophe.xmpp_stanza_get_ns`](@ref).
 """
 function ns(obj)
     s = stanza(obj)
     r = LibStrophe.xmpp_stanza_get_ns(s)
-    return unsafe_string(r)
+    if r == C_NULL
+        return nothing
+    else
+        return unsafe_string(r)
+    end
 end
 """
 $(SIGNATURES)
 
-Get the namespace attribute of `stanza`. Return the string with the 'xmlns' attribute value.
+Set the namespace attribute of `stanza`.
 
 See also [`ns`](@ref), [`LibStrophe.xmpp_stanza_set_ns`](@ref).
 """
@@ -530,19 +554,25 @@ end
 """
 $(SIGNATURES)
 
-Get the namespace attribute of `stanza`. Return the string with the 'type' attribute value.
+Get the type attribute of `stanza`. Return the string with the 'type'
+attribute value, or nothing if it does not exist.
+.
 
 See also [`type!`](@ref), [`LibStrophe.xmpp_stanza_get_type`](@ref).
 """
 function type(obj)
     s = stanza(obj)
     r = LibStrophe.xmpp_stanza_get_type(s)
-    return unsafe_string(r)
+    if r == C_NULL
+        return nothing
+    else
+        return unsafe_string(r)
+    end
 end
 """
 $(SIGNATURES)
 
-Get the namespace attribute of `stanza`. Return the string with the 'xmlns' attribute value.
+Set the type attribute of `stanza`.
 
 See also [`type`](@ref), [`LibStrophe.xmpp_stanza_set_type`](@ref).
 """
@@ -558,19 +588,24 @@ end
 """
 $(SIGNATURES)
 
-Get the namespace attribute of `stanza`. Return the string with the 'id' attribute value.
+Get the id attribute of `stanza`. Return the string with the 'id' attribute
+value, or nothing if it does not exist.
 
 See also [`id!`](@ref), [`LibStrophe.xmpp_stanza_get_id`](@ref).
 """
 function id(obj)
     s = stanza(obj)
     r = LibStrophe.xmpp_stanza_get_id(s)
-    return unsafe_string(r)
+    if r == C_NULL
+        return nothing
+    else
+        return unsafe_string(r)
+    end
 end
 """
 $(SIGNATURES)
 
-Get the namespace attribute of `stanza`. Return the string with the 'xmlns' attribute value.
+Set the id attribute of `stanza`.
 
 See also [`id`](@ref), [`LibStrophe.xmpp_stanza_set_id`](@ref).
 """
@@ -586,19 +621,24 @@ end
 """
 $(SIGNATURES)
 
-Get the namespace attribute of `stanza`. Return the string with the 'to' attribute value.
+Get the to attribute of `stanza`. Return the string with the 'to' attribute
+value, or nothing if it does not exist.
 
 See also [`to!`](@ref), [`LibStrophe.xmpp_stanza_get_to`](@ref).
 """
 function to(obj)
     s = stanza(obj)
     r = LibStrophe.xmpp_stanza_get_to(s)
-    return unsafe_string(r)
+    if r == C_NULL
+        return nothing
+    else
+        return unsafe_string(r)
+    end
 end
 """
 $(SIGNATURES)
 
-Get the namespace attribute of `stanza`. Return the string with the 'xmlns' attribute value.
+Set the to attribute of `stanza`.
 
 See also [`to`](@ref), [`LibStrophe.xmpp_stanza_set_to`](@ref).
 """
@@ -614,19 +654,24 @@ end
 """
 $(SIGNATURES)
 
-Get the namespace attribute of `stanza`. Return the string with the 'from' attribute value.
+Get the from attribute of `stanza`. Return the string with the 'from' attribute
+value, or nothing if it does not exist.
 
 See also [`from!`](@ref), [`LibStrophe.xmpp_stanza_get_from`](@ref).
 """
 function from(obj)
     s = stanza(obj)
     r = LibStrophe.xmpp_stanza_get_from(s)
-    return unsafe_string(r)
+    if r == C_NULL
+        return nothing
+    else
+        return unsafe_string(r)
+    end
 end
 """
 $(SIGNATURES)
 
-Get the namespace attribute of `stanza`. Return the string with the 'xmlns' attribute value.
+Set the from attribute of `stanza`.
 
 See also [`from`](@ref), [`LibStrophe.xmpp_stanza_set_from`](@ref).
 """
@@ -679,9 +724,9 @@ function reply_error(obj, type::AbstractString, condition::AbstractString, text:
 end
 
 """
-    message(ctx; type, to, id)
+    message([ctx]; type, to, id)
 Create a `<message/>` stanza object with the given attributes. Attributes are
-optional.
+optional. Defaults to the default context.
 
 See also [`LibStrophe.xmpp_message_new`](@ref).
 """
@@ -693,10 +738,11 @@ function message(obj; kwargs...)
     s = LibStrophe.xmpp_message_new(ctx, type, to, id)
     return Stanza(s, false)
 end
+message(; kwargs...) = message(context(); kwargs...)
 
 """
     body(message)
-Get text from `<body/>` child element. Will throw a [`StropheError`](@ref) when
+Get text from `<body/>` child element. Will return `nothing` when
 `message` does not have a `<body/>` element and on memory allocation error.
 
 See also [`LibStrophe.xmpp_message_get_body`](@ref), [`body!`](@ref).
@@ -705,7 +751,7 @@ function body(obj)
     msg = stanza(obj)
     r = LibStrophe.xmpp_message_get_body(msg)
     if r == C_NULL
-        throw(StropheError("Could not retrieve body text element."))
+        return nothing
     end
     ctx = LibStrophe.xmpp_stanza_get_context(msg)
     result = unsafe_string(r)
@@ -729,8 +775,9 @@ function body!(obj, text)
 end
 
 """
-    iq(ctx; type, id)
+    iq([ctx]; type, id)
 Create a `<iq/>` stanza object with given attributes. Attributes are optional.
+Defaults to the default context.
 
 See also [`LibStrophe.xmpp_iq_new`](@ref).
 """
@@ -741,10 +788,11 @@ function iq(obj; kwargs...)
     s = LibStrophe.xmpp_iq_new(ctx, type, id)
     return Stanza(s, false)
 end
+iq(; kwargs...) = iq(context(); kwargs...)
 
 """
-    presence(ctx)
-Create a `<presence/>` stanza object.
+    presence([ctx])
+Create a `<presence/>` stanza object. Defaults to the default context.
 
 See also [`LibStrophe.xmpp_presence_new`](@ref).
 """
@@ -753,11 +801,12 @@ function presence(obj)
     s = LibStrophe.xmpp_presence_new(ctx)
     return Stanza(s, false)
 end
+presence() = presence(context())
 
 """
-    stream_error(ctx; type, text)
+    stream_error([ctx]; type, text)
 Create an `<stream:error/>` stanza object with given `type` and an optional error
-`text`.
+`text`. Defaults to the default context.
 
 See also [`LibStrophe.xmpp_error_new`](@ref)
 """
@@ -767,6 +816,7 @@ function stream_error(obj; type, kwargs...)
     s = LibStrophe.xmpp_error_new(ctx, type, text)
     return Stanza(s, false)
 end
+stream_error(; kwargs...) = stream_error(context(); kwargs...)
 
 function (s::Stanza)(text::AbstractString)
     if !is_tag(s)

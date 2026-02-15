@@ -1,10 +1,12 @@
 """
+    Connection()
     Connection(context::Context)
     Connection(connection::Connection)
 
 A wrapper for a libstrophe connection. It handles allocation and
 de-allocation for you. If called with an existing `Connection`, use the internal
-[`LibStrophe.xmpp_conn_clone`](@ref) to clone the connection.
+[`LibStrophe.xmpp_conn_clone`](@ref) to clone the connection. Will use the
+default context if none is provided.
 
 See also [`Context`](@ref).
 """
@@ -33,6 +35,7 @@ mutable struct Connection
         return new_conn
     end
 end
+Connection() = Connection(context())
 
 """
     connection(obj)
