@@ -265,3 +265,11 @@ Set the `COMPRESSION_DONT_RESET` flag in the connection associated to `obj` to `
 See also [`connection`](@ref), [`flags!`](@ref), [`enableflag!`](@ref).
 """
 compressiondontreset!(obj, st = true) = enableflag!(obj, LibStrophe.XMPP_CONN_FLAG_COMPRESSION_DONT_RESET, st)
+
+"""
+    send(conn, stanza)
+
+Send `stanza` through `conn`. Will use [`connection`](@ref) and [`stanza`](@ref)
+to get down to the unerlying libstrophe pointers.
+"""
+send(conn, s) = LibStrophe.xmpp_send(connection(conn), stanza(s))

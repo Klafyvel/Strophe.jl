@@ -76,6 +76,7 @@ Strophe.ClientConnection
 Strophe.ComponentConnection
 Strophe.connect
 Strophe.disconnect
+Strophe.send
 Strophe.Connection
 Strophe.connection
 Strophe.jid
