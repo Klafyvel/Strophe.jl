@@ -10,6 +10,7 @@ include("context.jl")
 include("stanza.jl")
 include("connection.jl")
 include("parametrized_connection.jl")
+include("handler.jl")
 
 function __init__()
     LibStrophe.xmpp_initialize()
@@ -26,6 +27,7 @@ function __init__()
     )
     DEFAULT_JULIA_LOGGER[] = LibStrophe.xmpp_log_t(logger_c, C_NULL)
     DEFAULT_CONTEXT[] = Context()
+    REGISTERED_HANDLERS[] = Dict{UInt, Ref}()
     return nothing
 end
 

@@ -106,6 +106,14 @@ Strophe.compressiondontreset
 Strophe.compressiondontreset!
 ```
 
+## Stanza Handlers, Timed Event Handlers
+
+```@docs
+Strophe.add_handler!
+Strophe.delete_handler!
+Strophe.REGISTERED_HANDLERS
+```
+
 ## Logging
 
 You may be interested in the [logging example](examples/logging.md).
