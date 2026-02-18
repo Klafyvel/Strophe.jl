@@ -112,6 +112,12 @@ Strophe.compressiondontreset!
 Strophe.add_handler!
 Strophe.delete_handler!
 Strophe.REGISTERED_HANDLERS
+Strophe.add_id_handler!
+Strophe.delete_id_handler!
+Strophe.add_timed_handler!
+Strophe.delete_timed_handler!
+Strophe.add_global_timed_handler!
+Strophe.delete_global_timed_handler!
 ```
 
 ## Logging
