@@ -10,5 +10,6 @@ Strophe = "6ffd5fb6-ee8f-5ca1-bf15-72c8a2450bd8"
 Strophe = {path = ".."}
 
 [compat]
+Changelog = "1.1.0"
 Documenter = "1"
 LiveServer = "1.5.0"
