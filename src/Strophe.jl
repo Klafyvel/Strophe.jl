@@ -9,6 +9,7 @@ include("log.jl")
 include("context.jl")
 include("stanza.jl")
 include("connection.jl")
+include("stream_management.jl")
 include("parametrized_connection.jl")
 include("handler.jl")
 

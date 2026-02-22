@@ -202,6 +202,9 @@ const xmpp_stanza_t = _xmpp_stanza_t
 
 mutable struct _xmpp_sm_t end
 
+"""
+Internal, opaque, type used for Stream-Management state storage.
+"""
 const xmpp_sm_state_t = _xmpp_sm_t
 
 """
