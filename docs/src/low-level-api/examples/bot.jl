@@ -269,7 +269,7 @@ end
 
 # The main loop of the bot. We run it in its own thread, and to allow processing
 # of other tasks, we use [`Strophe.LibStrophe.xmpp_run_once`](@ref) instead of [`Strophe.LibStrophe.xmpp_run`](@ref)
-botty_task = Threads.@spawn begin
+function main()
     while reconnect
         global reconnect
         global sm_state
@@ -301,8 +301,9 @@ botty_task = Threads.@spawn begin
 
         LibStrophe.xmpp_conn_release(conn) # Release the current connection
     end
+    return
 end
-
+botty_task = Threads.@spawn main()
 waitall([speaky_task, botty_task])
 
 # After exiting the loop, we release the context and shutdown the library.

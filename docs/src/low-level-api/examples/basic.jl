@@ -28,10 +28,10 @@ function connection_handler(conn, status, error, stream_error, userdata)
     ## any data you want. In this example we pass a pointer to the current context.
     ctx = userdata
     if status == LibStrophe.XMPP_CONN_CONNECT # We just connected
-        @info "Connected!"
+        @info "Connected!" status
         LibStrophe.xmpp_disconnect(conn)
     else # Something else happended.
-        @info "Disconnected!"
+        @info "Disconnected!" status
         LibStrophe.xmpp_stop(ctx) # stop the event loop
     end
     return nothing

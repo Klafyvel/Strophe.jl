@@ -106,6 +106,18 @@ Strophe.compressiondontreset
 Strophe.compressiondontreset!
 ```
 
+## Stream-Management
+
+LibStrophe implements [`XEP-0198`](https://xmpp.org/extensions/xep-0198.html),
+and these functionnalities are exposed in Strophe.jl.
+
+```@docs
+Strophe.StreamManagementState
+Strophe.stream_management_state
+Strophe.stream_management_state!
+Strophe.restore_state_management_state!
+```
+
 ## Stanza Handlers, Timed Event Handlers
 
 ```@docs

@@ -97,6 +97,7 @@ Strophe.LibStrophe.xmpp_conn_restore_sm_state
 Strophe.LibStrophe.xmpp_conn_event_t
 Strophe.LibStrophe.xmpp_stream_error_t
 Strophe.LibStrophe.xmpp_error_type_t
+Strophe.LibStrophe.xmpp_sm_state_t
 ```
 
 ## [SSL/TLS specific functionality](@id low-level-SSL)

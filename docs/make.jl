@@ -1,7 +1,6 @@
 using Strophe
 using Documenter
 using Literate
-
 using Sockets
 
 function wait_for_port(host, port; timeout = 10.0, interval = 0.5)
@@ -104,7 +103,7 @@ Changelog.generate(
     repo = "Klafyvel/Strophe.jl",           # default repository for links
 )
 
-skip = ["high-level-api/examples/bot.md", "high-level-api/examples/logging.md"]
+skip = []
 
 makedocs(;
     modules = [Strophe],
