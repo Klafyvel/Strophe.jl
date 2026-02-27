@@ -396,7 +396,7 @@ On Windows usage shall be: ``` SOCKET soc = *((SOCKET*)sock); ```
 
 This function will be called for each socket that is created.
 
-`examples/bot.c` uses a libstrophe supplied callback function that sets basic keepalive parameters (`[`xmpp_sockopt_cb_keepalive`](@ref)()`).
+[`examples/bot.c`](@ref low-level-bot-example) uses a libstrophe supplied callback function that sets basic keepalive parameters ([`xmpp_sockopt_cb_keepalive`](@ref)).
 
 `examples/complex.c` implements a custom function that could be useful for an application.
 

@@ -280,6 +280,9 @@ function main()
         LibStrophe.xmpp_conn_set_jid(conn, jid)
         LibStrophe.xmpp_conn_set_pass(conn, password)
 
+        ## Enable the TCP keepalive callback function provided by LibStrophe
+        LibStrophe.xmpp_conn_set_sockopt_callback(conn, LibStrophe.xmpp_sockopt_cb_keepalive)
+
         if sm_state ≠ C_NULL # set Stream-Mangement state if available
             LibStrophe.xmpp_conn_set_sm_state(conn, sm_state)
             sm_state = C_NULL
