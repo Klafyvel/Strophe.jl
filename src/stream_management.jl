@@ -55,7 +55,7 @@ for setting a callback function that will be called to store the state.
 """
 function restore_state_management_state!(conn, sm_state)
     c_string = Base.unsafe_convert(Cstring, Base.cconvert(Cstring, sm_state))
-    ret = LibStrophe.xmpp_conn_restore_sm_state(connection(conn), c_string, len(sm_state))
+    ret = LibStrophe.xmpp_conn_restore_sm_state(connection(conn), c_string, length(sm_state))
     if ret < 0
         throw(StropheError("Failed to restore stream management state."))
     end

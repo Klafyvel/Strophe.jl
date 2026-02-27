@@ -77,7 +77,7 @@ function add_id_handler!(conn, handler, id)
     handler_cfunction = @cfunction($handler, Cint, (Ptr{LibStrophe.xmpp_conn_t}, Ptr{LibStrophe.xmpp_stanza_t}))
     REGISTERED_HANDLERS[][objectid(handler)] = handler_cfunction
     handler_ptr = Base.unsafe_convert(Ptr{Cvoid}, Base.cconvert(Ptr{Cvoid}, handler_cfunction))
-    LibStrophe.xmpp_handler_add(connection(conn), handler_ptr, event.namespace, event.name, event.type, C_NULL)
+    LibStrophe.xmpp_id_handler_add(connection(conn), handler_ptr, id, C_NULL)
     return nothing
 end
 """

@@ -121,7 +121,7 @@ See also [`disconnect`](@ref), [`ParametrizedConnection`](@ref), [`LibStrophe.xm
 """
 function connect(conn::ParametrizedConnection)
     if !isnothing(conn.stream_management_callback)
-        LibStrophe.xmpp_conn_set_sm_callback(connection(conn), conn.stream_management_callback, context(conn))
+        LibStrophe.xmpp_conn_set_sm_callback(connection(conn), conn.stream_management_callback::LibStrophe.xmpp_sm_callback, context(conn))
     end
     status = if conn.type == LibStrophe.XMPP_CLIENT
         LibStrophe.xmpp_connect_client(
