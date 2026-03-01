@@ -1,0 +1,26 @@
+# [SSL/TLS Specific Functionality](@id low-level-SSL)
+
+These functions provide SSL/TLS specific functionality.
+
+```@docs
+Strophe.LibStrophe.xmpp_certfail_handler
+Strophe.LibStrophe.xmpp_password_callback
+Strophe.LibStrophe.xmpp_cert_element_t
+Strophe.LibStrophe.xmpp_conn_set_certfail_handler
+Strophe.LibStrophe.xmpp_conn_set_cafile
+Strophe.LibStrophe.xmpp_conn_set_capath
+Strophe.LibStrophe.xmpp_conn_get_peer_cert
+Strophe.LibStrophe.xmpp_conn_set_password_callback
+Strophe.LibStrophe.xmpp_conn_set_password_retries
+Strophe.LibStrophe.xmpp_conn_get_keyfile
+Strophe.LibStrophe.xmpp_conn_set_client_cert
+Strophe.LibStrophe.xmpp_conn_cert_xmppaddr_num
+Strophe.LibStrophe.xmpp_conn_cert_xmppaddr
+Strophe.LibStrophe.xmpp_tlscert_get_ctx
+Strophe.LibStrophe.xmpp_tlscert_get_conn
+Strophe.LibStrophe.xmpp_tlscert_get_pem
+Strophe.LibStrophe.xmpp_tlscert_get_dnsname
+Strophe.LibStrophe.xmpp_tlscert_get_string
+Strophe.LibStrophe.xmpp_tlscert_get_description
+Strophe.LibStrophe.xmpp_tlscert_free
+```

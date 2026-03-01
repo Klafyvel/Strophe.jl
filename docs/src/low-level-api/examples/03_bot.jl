@@ -1,6 +1,6 @@
 #=
 
-# [Bot example](@id low-level-bot-example)
+# [Bot Example](@id low-level-bot-example)
 
 This is a port in Julia of [the bot example from libstrophe](https://github.com/strophe/libstrophe/blob/master/examples/bot.c).
 
@@ -15,7 +15,7 @@ If you need a simpler example on how to set-up a basic connection, you can read
 first [the basic example](@ref low-level-basic-example) page.
 
 =#
-import Strophe: LibStrophe
+import Strophe: LibStrophe, sockopt_cb_keepalive
 
 # ## Boilerplate
 # We want some facilities to listen to our xmpp server. The idea is quite simple:
@@ -269,7 +269,7 @@ end
 
 # The main loop of the bot. We run it in its own thread, and to allow processing
 # of other tasks, we use [`Strophe.LibStrophe.xmpp_run_once`](@ref) instead of [`Strophe.LibStrophe.xmpp_run`](@ref)
-botty_task = Threads.@spawn begin
+function main()
     while reconnect
         global reconnect
         global sm_state
@@ -279,6 +279,9 @@ botty_task = Threads.@spawn begin
         LibStrophe.xmpp_conn_set_flags(conn, flags)
         LibStrophe.xmpp_conn_set_jid(conn, jid)
         LibStrophe.xmpp_conn_set_pass(conn, password)
+
+        ## Enable the TCP keepalive callback function provided by LibStrophe
+        LibStrophe.xmpp_conn_set_sockopt_callback(conn, sockopt_cb_keepalive[])
 
         if sm_state ≠ C_NULL # set Stream-Mangement state if available
             LibStrophe.xmpp_conn_set_sm_state(conn, sm_state)
@@ -301,8 +304,9 @@ botty_task = Threads.@spawn begin
 
         LibStrophe.xmpp_conn_release(conn) # Release the current connection
     end
+    return
 end
-
+botty_task = Threads.@spawn main()
 waitall([speaky_task, botty_task])
 
 # After exiting the loop, we release the context and shutdown the library.

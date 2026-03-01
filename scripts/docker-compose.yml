@@ -11,7 +11,7 @@ services:
     image: prosodyim/prosody:13.0
 
     # Always check for updates when starting
-    pull_policy: always
+    # pull_policy: always
 
     # Automatically start Prosody, e.g. when your system starts, if it was
     # running previously

@@ -1,8 +1,6 @@
-# [Examples](@id low-level-examples)
+# [Examples](@id high-level-examples)
 
-These examples are direct translation of [the examples provided by the underlying libstrophe library](https://github.com/strophe/libstrophe/blob/master/examples).
-
-## How to Run the Examples at Home
+## How to run the examples at home
 
 If you have your own XMPP server, you could configure the examples to use an account
 there.
@@ -21,18 +19,18 @@ mkdir data
 Then, run prosody:
 
 ```bash
-docker compose -f scripts/docker-compose.yml up
+docker-compose up
 ```
 
 Finally, in another terminal in the same folder, create two test users.
 
 ```bash
-docker compose -f scripts/docker-compose.yml exec prosody prosodyctl register pinocchio localhost plopiplop
-docker compose -f scripts/docker-compose.yml exec prosody prosodyctl register gepetto localhost plopiplop
+sudo docker compose exec prosody prosodyctl register pinocchio localhost plopiplop
+sudo docker compose exec prosody prosodyctl register gepetto localhost plopiplop
 ```
 
 ## Contents
 
 ```@contents
-Pages = ["01_basic.md", "02_roster.md", "03_bot.md"]
+Pages = ["basic.md", "bot.md", "roster.md"]
 ```

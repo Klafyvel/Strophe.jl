@@ -1,8 +1,8 @@
-# [Developer documentation](@id dev_docs)
+# [Developer Documentation](@id dev_docs)
 
 If you want to make contributions to this package that involves code, then this guide is for you.
 
-## First time clone
+## First Time Clone
 
 !!! tip "If you have writing rights"
     If you have writing rights, you don't have to fork. Instead, simply clone and skip ahead. Whenever **upstream** is mentioned, use **origin** instead.

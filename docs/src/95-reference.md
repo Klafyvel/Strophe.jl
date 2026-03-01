@@ -11,7 +11,3 @@ Pages = ["95-reference.md"]
 ```@index
 Pages = ["95-reference.md"]
 ```
-
-```@autodocs
-Modules = [Strophe]
-```
