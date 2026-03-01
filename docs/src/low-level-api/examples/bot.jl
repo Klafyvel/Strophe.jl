@@ -1,6 +1,6 @@
 #=
 
-# [Bot example](@id low-level-bot-example)
+# [Bot Example](@id low-level-bot-example)
 
 This is a port in Julia of [the bot example from libstrophe](https://github.com/strophe/libstrophe/blob/master/examples/bot.c).
 
@@ -15,7 +15,7 @@ If you need a simpler example on how to set-up a basic connection, you can read
 first [the basic example](@ref low-level-basic-example) page.
 
 =#
-import Strophe: LibStrophe
+import Strophe: LibStrophe, sockopt_cb_keepalive
 
 # ## Boilerplate
 # We want some facilities to listen to our xmpp server. The idea is quite simple:
@@ -281,7 +281,7 @@ function main()
         LibStrophe.xmpp_conn_set_pass(conn, password)
 
         ## Enable the TCP keepalive callback function provided by LibStrophe
-        LibStrophe.xmpp_conn_set_sockopt_callback(conn, LibStrophe.xmpp_sockopt_cb_keepalive)
+        LibStrophe.xmpp_conn_set_sockopt_callback(conn, sockopt_cb_keepalive[])
 
         if sm_state ≠ C_NULL # set Stream-Mangement state if available
             LibStrophe.xmpp_conn_set_sm_state(conn, sm_state)

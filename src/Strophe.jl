@@ -13,6 +13,9 @@ include("stream_management.jl")
 include("parametrized_connection.jl")
 include("handler.jl")
 
+"A pointer to [`LibStrophe.xmpp_sockopt_cb_keepalive`](@ref). See [](@ref low-level-bot-example) for example usage."
+const sockopt_cb_keepalive = Ref{Ptr{Cvoid}}(0)
+
 function __init__()
     LibStrophe.xmpp_initialize()
     atexit(LibStrophe.xmpp_shutdown)
@@ -26,6 +29,7 @@ function __init__()
         logger, Cvoid,
         (Ptr{Cvoid}, LibStrophe.xmpp_log_level_t, Cstring, Cstring)
     )
+    sockopt_cb_keepalive[] = @cfunction(LibStrophe.xmpp_sockopt_cb_keepalive, Cint, (Ptr{LibStrophe.xmpp_conn_t}, Ptr{Cvoid}))
     DEFAULT_JULIA_LOGGER[] = LibStrophe.xmpp_log_t(logger_c, C_NULL)
     DEFAULT_CONTEXT[] = Context()
     REGISTERED_HANDLERS[] = Dict{UInt, Ref}()

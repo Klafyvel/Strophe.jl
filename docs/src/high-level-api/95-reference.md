@@ -104,6 +104,7 @@ Strophe.enablecompression
 Strophe.enablecompression!
 Strophe.compressiondontreset
 Strophe.compressiondontreset!
+Strophe.sockopt_cb_keepalive
 ```
 
 ## Stream-Management

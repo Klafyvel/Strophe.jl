@@ -1,4 +1,4 @@
-# High-level API
+# [High-Level API](@id high-level-api)
 
 ## Contents
 
