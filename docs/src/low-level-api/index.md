@@ -11,5 +11,5 @@ The low-level API is a direct binding to [the underlying libstrophe library](htt
 ## Contents
 
 ```@contents
-Pages = ["95-reference.md", "examples/index.md"]
+Pages = ["95-reference/index.md", "examples/index.md"]
 ```

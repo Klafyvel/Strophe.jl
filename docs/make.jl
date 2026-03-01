@@ -35,6 +35,7 @@ const titles = Dict(
     "91-developer.md" => "Developer docs",
     "low-level-api" => "Low level API",
     "low-level-api/examples" => "Examples",
+    "low-level-api/95-reference" => "Reference",
     "high-level-api" => "High level API",
     "high-level-api/examples" => "Examples",
 )

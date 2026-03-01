@@ -42,6 +42,10 @@ jobs:
         run: docker compose -f scripts/docker-compose.yml exec prosody prosodyctl register pinocchio localhost plopiplop
       - name: create user gepetto
         run: docker compose -f scripts/docker-compose.yml exec prosody prosodyctl register gepetto localhost plopiplop
+      - name: Install mod_roster_command
+        run: docker compose -f scripts/docker-compose.yml exec prosody prosodyctl install --server=https://modules.prosody.im/rocks/ mod_roster_command
+      - name: Subscribe users
+        run: docker compose -f scripts/docker-compose.yml exec prosody prosodyctl mod_roster_command subscribe_both gepetto@localhost pinocchio@localhost
       - uses: julia-actions/setup-julia@v2
         with:
           version: "1"

@@ -2762,38 +2762,55 @@ function xmpp_conn_disable_tls(conn)
     return ccall((:xmpp_conn_disable_tls, libstrophe), Cvoid, (Ptr{xmpp_conn_t},), conn)
 end
 
+"`jabber:client` namespace string."
 const XMPP_NS_CLIENT = "jabber:client"
 
+"`jabber:component:accept` namespace string."
 const XMPP_NS_COMPONENT = "jabber:component:accept"
 
+"`http://etherx.jabber.org/streams` namespace string."
 const XMPP_NS_STREAMS = "http://etherx.jabber.org/streams"
 
+"`urn:ietf:params:xml:ns:xmpp-streams` namespace string."
 const XMPP_NS_STREAMS_IETF = "urn:ietf:params:xml:ns:xmpp-streams"
 
+"`urn:ietf:params:xml:ns:xmpp-stanzas` namespace string."
 const XMPP_NS_STANZAS_IETF = "urn:ietf:params:xml:ns:xmpp-stanzas"
 
+"`urn:ietf:params:xml:ns:xmpp-tls` namespace string."
 const XMPP_NS_TLS = "urn:ietf:params:xml:ns:xmpp-tls"
 
+"`urn:ietf:params:xml:ns:xmpp-sasl` namespace string."
 const XMPP_NS_SASL = "urn:ietf:params:xml:ns:xmpp-sasl"
 
+"`urn:ietf:params:xml:ns:xmpp-bind` namespace string."
 const XMPP_NS_BIND = "urn:ietf:params:xml:ns:xmpp-bind"
 
+"`urn:ietf:params:xml:ns:xmpp-session` namespace string."
 const XMPP_NS_SESSION = "urn:ietf:params:xml:ns:xmpp-session"
 
+"`jabber:iq:auth` namespace string."
 const XMPP_NS_AUTH = "jabber:iq:auth"
 
+"`http://jabber.org/protocol/disco#info` namespace string."
 const XMPP_NS_DISCO_INFO = "http://jabber.org/protocol/disco#info"
 
+"`http://jabber.org/protocol/disco#items` namespace string."
 const XMPP_NS_DISCO_ITEMS = "http://jabber.org/protocol/disco#items"
 
+"`jabber:iq:roster` namespace string."
 const XMPP_NS_ROSTER = "jabber:iq:roster"
 
+"`jabber:iq:register` namespace string."
 const XMPP_NS_REGISTER = "jabber:iq:register"
 
+"`urn:xmpp:sm:3` namespace string."
 const XMPP_NS_SM = "urn:xmpp:sm:3"
 
+"`http://jabber.org/protocol/compress` namespace string."
 const XMPP_NS_COMPRESSION = "http://jabber.org/protocol/compress"
 
+"`http://jabber.org/features/compress` namespace string."
 const XMPP_NS_FEATURE_COMPRESSION = "http://jabber.org/features/compress"
 
 """
@@ -2822,20 +2839,28 @@ Internal failure error code.
 """
 const XMPP_EINT = -3
 
+"Disable TLS."
 const XMPP_CONN_FLAG_DISABLE_TLS = Culong(1) << 0
 
+"Make TLS mandatory."
 const XMPP_CONN_FLAG_MANDATORY_TLS = Culong(1) << 1
 
+"Enable legacy SSL"
 const XMPP_CONN_FLAG_LEGACY_SSL = Culong(1) << 2
 
+"Trust TLS certificate."
 const XMPP_CONN_FLAG_TRUST_TLS = Culong(1) << 3
 
+"Enable legacy auth."
 const XMPP_CONN_FLAG_LEGACY_AUTH = Culong(1) << 4
 
+"Disable stream management."
 const XMPP_CONN_FLAG_DISABLE_SM = Culong(1) << 5
 
+"Enable compression."
 const XMPP_CONN_FLAG_ENABLE_COMPRESSION = Culong(1) << 6
 
+"Do not reset compression."
 const XMPP_CONN_FLAG_COMPRESSION_DONT_RESET = Culong(1) << 7
 
 const XMPP_SHA1_DIGEST_SIZE = 20

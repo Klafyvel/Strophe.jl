@@ -110,7 +110,7 @@ mutable struct Stanza
     function Stanza(s::Ptr{LibStrophe.xmpp_stanza_t}, released::Bool = false)
         obj = new(s, released)
         Base.finalizer(obj) do s::Stanza
-            if stanza(s) ≠ C_NULL && !s.released
+            if s.stanza ≠ C_NULL && !s.released
                 release!(s)
             end
         end

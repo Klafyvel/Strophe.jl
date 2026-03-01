@@ -70,7 +70,7 @@ Strophe.run(conn) # Run the internal event loop from libstrophe
 #
 # ## Under the hood...
 # In this example, we have skipped an important detail. If you have a look at
-# [the corresponding low-level API example](../../low-level-api/examples/basic.md),
+# [the corresponding low-level API example](@ref low-level-basic-example),
 # you will see that the underlying [`Strophe.LibStrophe`](@ref) has the concept of **context**.
 # In a more complex example, you would be able to have several connections running
 # in a single context. In fact, the [`Strophe.run`](@ref) function uses the [`Strophe.context`](@ref)
