@@ -111,7 +111,10 @@ makedocs(;
     authors = "klafyvel <hugo@klafyvel.me>",
     repo = "https://github.com/Klafyvel/Strophe.jl/blob/{commit}{path}#{line}",
     sitename = "Strophe.jl",
-    format = Documenter.HTML(; canonical = "https://klafyvel.github.io/Strophe.jl"),
+    format = Documenter.HTML(;
+        canonical = "https://klafyvel.github.io/Strophe.jl",
+        repolink = "https://github.com/Klafyvel/Strophe.jl"
+    ),
     pages = list_pages(skip),
     pagesonly = true,
     warnonly = true,
