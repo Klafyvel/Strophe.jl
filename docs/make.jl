@@ -1,5 +1,3 @@
-using Strophe
-using Documenter
 using Literate
 using Sockets
 
@@ -25,9 +23,7 @@ end
                 for port in (5222, 5269)
         ]
     )
-) "Test connection to XMPP server failed. Start it using the docker-compose.yml file in $(joinpath(pkgdir(Strophe), "scripts")))"
-
-DocMeta.setdocmeta!(Strophe, :DocTestSetup, :(using Strophe); recursive = true)
+) "Test connection to XMPP server failed. Start it using the docker-compose.yml file in $(joinpath(joinpath(@__DIR__, ""), "scripts")))"
 
 # Add titles of sections and overrides page titles
 const titles = Dict(
@@ -106,15 +102,23 @@ Changelog.generate(
 
 skip = []
 
+pages = list_pages(skip)
+
+using Strophe
+using Documenter
+DocMeta.setdocmeta!(Strophe, :DocTestSetup, :(using Strophe); recursive = true)
+
 makedocs(;
     modules = [Strophe],
     authors = "klafyvel <hugo@klafyvel.me>",
     repo = "https://github.com/Klafyvel/Strophe.jl/blob/{commit}{path}#{line}",
     sitename = "Strophe.jl",
-    format = Documenter.HTML(; canonical = "https://klafyvel.github.io/Strophe.jl"),
-    pages = list_pages(skip),
+    format = Documenter.HTML(;
+        canonical = "https://klafyvel.github.io/Strophe.jl",
+        repolink = "https://github.com/Klafyvel/Strophe.jl"
+    ),
+    pages = pages,
     pagesonly = true,
-    warnonly = true,
 )
 
 deploydocs(; repo = "github.com/Klafyvel/Strophe.jl")
