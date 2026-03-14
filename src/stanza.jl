@@ -42,7 +42,8 @@ Otherwise, add a text child containing `text`.
 
     s(children...[; attributes])
 When `s` is a tag stanza, add children to the stanza, and optionally add the
-relevant `attributes`.
+relevant `attributes`. The children will be rendered unusable after that and should
+be considered released.
 
 # Examples
 
@@ -236,7 +237,7 @@ Base.eltype(::Type{SiblingIterator}) = Stanza # Ptr{LibStrophe.xmpp_stanza_t}
 Base.isdone(::SiblingIterator, state::Ptr{LibStrophe.xmpp_stanza_t}) = state == C_NULL
 function Base.iterate(it::SiblingIterator, next::Ptr{LibStrophe.xmpp_stanza_t} = it.init)
     next == C_NULL && return nothing
-    current = Stanza(next, false)
+    current = Stanza(next, true)
     next = LibStrophe.xmpp_stanza_get_next(next)
     return current, next
 end
@@ -832,7 +833,8 @@ function (s::Stanza)(children::Stanza...; attributes...)
         throw(ArgumentError("Cannot add children to a non-tag stanza. Give it a name first!"))
     end
     for child in children
-        child!(s, child)
+        child!(s, child, do_clone = false)
+        child.released = true
     end
     for (k, v) in attributes
         s[string(k)] = v
