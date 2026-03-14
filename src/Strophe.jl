@@ -13,7 +13,7 @@ include("stream_management.jl")
 include("parametrized_connection.jl")
 include("handler.jl")
 
-"A pointer to [`LibStrophe.xmpp_sockopt_cb_keepalive`](@ref). See [](@ref low-level-bot-example) for example usage."
+"A pointer to [`LibStrophe.xmpp_sockopt_cb_keepalive`](@ref). See [The low-level bot example](@ref low-level-examples) for example usage."
 const sockopt_cb_keepalive = Ref{Ptr{Cvoid}}(0)
 
 function __init__()

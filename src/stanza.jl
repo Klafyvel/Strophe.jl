@@ -48,7 +48,7 @@ be considered released.
 # Examples
 
 Here are two ways of creating the `<iq/>` following stanza (inspired by the
-[bot example](@ref high-level-bot-example)):
+[bot example](@ref high-level-examples)):
 ```xml
 <iq
     type='result'
