@@ -1,0 +1,15 @@
+# Stanza and timed event handlers
+
+```@docs
+Strophe.LibStrophe.xmpp_timed_handler_delete
+Strophe.LibStrophe.xmpp_id_handler_delete
+Strophe.LibStrophe.xmpp_handler_delete
+Strophe.LibStrophe.xmpp_timed_handler_add
+Strophe.LibStrophe.xmpp_id_handler_add
+Strophe.LibStrophe.xmpp_handler_add
+Strophe.LibStrophe.xmpp_global_timed_handler_add
+Strophe.LibStrophe.xmpp_global_timed_handler_delete
+Strophe.LibStrophe.xmpp_handler
+Strophe.LibStrophe.xmpp_timed_handler
+Strophe.LibStrophe.xmpp_global_timed_handler
+```
