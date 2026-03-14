@@ -71,6 +71,7 @@ function recursively_list_pages(folder, skip = []; path_prefix = "")
         end
         if splitext(file)[2] == ".jl"
             Literate.markdown(fullpath, folder)
+            push!(pages_list, splitext(relpath)[1] * ".md")
         elseif splitext(file)[2] != ".md" # non .md files are ignored
             continue
         elseif haskey(titles, relpath) # case 'title => path'
