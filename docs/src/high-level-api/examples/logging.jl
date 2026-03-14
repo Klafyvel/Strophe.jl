@@ -1,8 +1,8 @@
 #=
 
-# Logging example
+# [Logging example](@id high-level-loging-example)
 
-This example dives into the specifics of logging using [the basic example](basic.md).
+This example dives into the specifics of logging using [the basic example](@ref high-level-basic-example).
 You may want to start there if you are just starting.
 
 =#

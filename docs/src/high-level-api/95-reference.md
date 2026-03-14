@@ -135,7 +135,7 @@ Strophe.delete_global_timed_handler!
 
 ## Logging
 
-You may be interested in the [logging example](examples/logging.md).
+You may be interested in the [logging example](@ref high-level-loging-example).
 
 ```@docs
 Strophe.logger
