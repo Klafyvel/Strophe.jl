@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Logging example · Strophe.jl</title><meta name="title" content="Logging example · Strophe.jl"/><meta property="og:title" content="Logging example · Strophe.jl"/><meta property="twitter:title" content="Logging example · Strophe.jl"/><meta name="description" content="Documentation for Strophe.jl."/><meta property="og:description" content="Documentation for Strophe.jl."/><meta property="twitter:description" content="Documentation for Strophe.jl."/><meta property="og:url" content="https://klafyvel.github.io/Strophe.jl/high-level-api/examples/logging/"/><meta property="twitter:url" content="https://klafyvel.github.io/Strophe.jl/high-level-api/examples/logging/"/><link rel="canonical" href="https://klafyvel.github.io/Strophe.jl/high-level-api/examples/logging/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">Strophe.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Strophe</a></li><li><a class="tocitem" href="../../../21_differences_with_libstrophe/">Noteworthy differences with libstrophe</a></li><li><a class="tocitem" href="../../../91-developper/">Developer Documentation</a></li><li><a class="tocitem" href="../../../95-reference/">Reference</a></li><li><a class="tocitem" href="../../../96-changelog/">Changelog</a></li><li><span class="tocitem">High level API</span><ul><li><a class="tocitem" href="../../">High-Level API</a></li><li><a class="tocitem" href="../../95-reference/">Reference</a></li><li><input class="collapse-toggle" id="menuitem-6-3" type="checkbox" checked/><label class="tocitem" for="menuitem-6-3"><span class="docs-label">Examples</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../">Examples</a></li><li><a class="tocitem" href="../basic/">Basic example</a></li><li><a class="tocitem" href="../bot/">Bot example</a></li><li class="is-active"><a class="tocitem" href>Logging example</a><ul class="internal"><li><a class="tocitem" href="#Initialization"><span>Initialization</span></a></li><li><a class="tocitem" href="#Connection"><span>Connection</span></a></li><li><a class="tocitem" href="#Displaying-libstrophe&#39;s-area-parameter"><span>Displaying libstrophe&#39;s area parameter</span></a></li><li><a class="tocitem" href="#Filtering-log-events-based-on-libstrophe&#39;s-area"><span>Filtering log events based on libstrophe&#39;s area</span></a></li></ul></li><li><a class="tocitem" href="../roster/">Roster example</a></li></ul></li></ul></li><li><span class="tocitem">Low level API</span><ul><li><a class="tocitem" href="../../../low-level-api/">Low-level API</a></li><li><input class="collapse-toggle" id="menuitem-7-2" type="checkbox"/><label class="tocitem" for="menuitem-7-2"><span class="docs-label">Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../../low-level-api/95-reference/">Reference</a></li><li><a class="tocitem" href="../../../low-level-api/95-reference/01_misc/">Misc</a></li><li><a class="tocitem" href="../../../low-level-api/95-reference/02_initialization/">Initialization, Shutdown, and Versioning</a></li><li><a class="tocitem" href="../../../low-level-api/95-reference/03_context_objects/">Context Objects</a></li><li><a class="tocitem" href="../../../low-level-api/95-reference/04_connection/">Connection Management</a></li><li><a class="tocitem" href="../../../low-level-api/95-reference/05_ssl/">SSL/TLS Specific Functionality</a></li><li><a class="tocitem" href="../../../low-level-api/95-reference/06_event_loop/">Event Loop</a></li><li><a class="tocitem" href="../../../low-level-api/95-reference/07_stanza/">Stanza</a></li><li><a class="tocitem" href="../../../low-level-api/95-reference/08_stanza_handlers/">Stanza and timed event handlers</a></li><li><a class="tocitem" href="../../../low-level-api/95-reference/09_jid/">JID Creation and Parsing</a></li><li><a class="tocitem" href="../../../low-level-api/95-reference/10_rng/">Pseudo-Random Number Generator</a></li><li><a class="tocitem" href="../../../low-level-api/95-reference/11_digest/">Message Digests</a></li><li><a class="tocitem" href="../../../low-level-api/95-reference/12_encodings/">Encodings</a></li><li><a class="tocitem" href="../../../low-level-api/95-reference/13_constants/">Constants</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7-3" type="checkbox"/><label class="tocitem" for="menuitem-7-3"><span class="docs-label">Examples</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../../low-level-api/examples/">Examples</a></li><li><a class="tocitem" href="../../../low-level-api/examples/01_basic/">Basic example</a></li><li><a class="tocitem" href="../../../low-level-api/examples/02_roster/">Roster example</a></li><li><a class="tocitem" href="../../../low-level-api/examples/03_bot/">Bot Example</a></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">High level API</a></li><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Logging example</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Logging example</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/Klafyvel/Strophe.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/Klafyvel/Strophe.jl/blob/main/docs/src/high-level-api/examples/logging.jl#" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="high-level-loging-example"><a class="docs-heading-anchor" href="#high-level-loging-example">Logging example</a><a id="high-level-loging-example-1"></a><a class="docs-heading-anchor-permalink" href="#high-level-loging-example" title="Permalink"></a></h1><p>This example dives into the specifics of logging using <a href="../basic/#high-level-basic-example">the basic example</a>. You may want to start there if you are just starting.</p><h2 id="Initialization"><a class="docs-heading-anchor" href="#Initialization">Initialization</a><a id="Initialization-1"></a><a class="docs-heading-anchor-permalink" href="#Initialization" title="Permalink"></a></h2><p>We will not repeat here the explanations of the basic example, let&#39;s include all the preparations already!</p><pre><code class="language-julia hljs">import Strophe
+import Strophe: LibStrophe
+using Logging
+
+function connection_handler(conn, status, error, stream_error)
+    if status == LibStrophe.XMPP_CONN_CONNECT # We just connected
+        @info &quot;Connected!&quot;
+        Strophe.disconnect(conn)
+    else
+        @info &quot;Disconnected!&quot;
+        Strophe.stop(conn) # stop the event loop
+    end
+    return nothing
+end
+conn = Strophe.ClientConnection(host = &quot;localhost&quot;, handler = connection_handler)
+Strophe.trusttls!(conn)
+jid = &quot;gepetto@localhost&quot;
+password = &quot;plopiplop&quot;
+Strophe.jid!(conn, jid)
+Strophe.pass!(conn, password)</code></pre><h2 id="Connection"><a class="docs-heading-anchor" href="#Connection">Connection</a><a id="Connection-1"></a><a class="docs-heading-anchor-permalink" href="#Connection" title="Permalink"></a></h2><p>This time, let&#39;s have a logger to intercept even debug-level logs!</p><pre><code class="language-julia hljs">debuglogger = ConsoleLogger(stderr, Logging.Debug)
+with_logger(debuglogger) do
+    Strophe.connect(conn) # Will raise a StropheError if connection fails.
+    Strophe.run(conn) # Run the internal event loop from libstrophe
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">┌ Debug: Connecting via altdomain.
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: Connecting to localhost:5222 via ::1
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: sock_connect() result 22
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: connection successful
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: SENT: &lt;?xml version=&quot;1.0&quot;?&gt;&lt;stream:stream to=&quot;localhost&quot; xml:lang=&quot;en&quot; version=&quot;1.0&quot; xmlns=&quot;jabber:client&quot; xmlns:stream=&quot;http://etherx.jabber.org/streams&quot;&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: RECV: &lt;stream:stream lang=&quot;en&quot; version=&quot;1.0&quot; id=&quot;caeb4fa2-37a3-4e29-8afe-4866b458b649&quot; from=&quot;localhost&quot;&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: RECV: &lt;features xmlns=&quot;http://etherx.jabber.org/streams&quot;&gt;&lt;starttls xmlns=&quot;urn:ietf:params:xml:ns:xmpp-tls&quot;&gt;&lt;required/&gt;&lt;/starttls&gt;&lt;limits xmlns=&quot;urn:xmpp:stream-limits:0&quot;&gt;&lt;max-bytes&gt;262144&lt;/max-bytes&gt;&lt;idle-seconds&gt;840&lt;/idle-seconds&gt;&lt;/limits&gt;&lt;/features&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: SENT: &lt;starttls xmlns=&quot;urn:ietf:params:xml:ns:xmpp-tls&quot;/&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: RECV: &lt;proceed xmlns=&quot;urn:ietf:params:xml:ns:xmpp-tls&quot;/&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: handle proceedtls called for proceed
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: proceeding with TLS
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: Certificate verification FAILED, result=X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT(18)
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: User decided to connect anyways
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: Subject=/CN=localhost
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: Issuer=/CN=localhost
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: SENT: &lt;?xml version=&quot;1.0&quot;?&gt;&lt;stream:stream to=&quot;localhost&quot; xml:lang=&quot;en&quot; version=&quot;1.0&quot; xmlns=&quot;jabber:client&quot; xmlns:stream=&quot;http://etherx.jabber.org/streams&quot; from=&quot;gepetto@localhost&quot;&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: RECV: &lt;stream:stream to=&quot;gepetto@localhost&quot; lang=&quot;en&quot; version=&quot;1.0&quot; id=&quot;13447ba2-73a0-41e9-b82f-40574a919204&quot; from=&quot;localhost&quot;&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: RECV: &lt;features xmlns=&quot;http://etherx.jabber.org/streams&quot;&gt;&lt;register xmlns=&quot;http://jabber.org/features/iq-register&quot;/&gt;&lt;register xmlns=&quot;urn:xmpp:invite&quot;/&gt;&lt;register xmlns=&quot;urn:xmpp:ibr-token:0&quot;/&gt;&lt;mechanisms xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;&lt;mechanism&gt;PLAIN&lt;/mechanism&gt;&lt;mechanism&gt;SCRAM-SHA-1&lt;/mechanism&gt;&lt;mechanism&gt;SCRAM-SHA-1-PLUS&lt;/mechanism&gt;&lt;mechanism&gt;OAUTHBEARER&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;sasl-channel-binding xmlns=&quot;urn:xmpp:sasl-cb:0&quot;&gt;&lt;channel-binding type=&quot;tls-exporter&quot;/&gt;&lt;/sasl-channel-binding&gt;&lt;limits xmlns=&quot;urn:xmpp:stream-limits:0&quot;&gt;&lt;max-bytes&gt;262144&lt;/max-bytes&gt;&lt;idle-seconds&gt;840&lt;/idle-seconds&gt;&lt;/limits&gt;&lt;/features&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: SENT: &lt;auth mechanism=&quot;SCRAM-SHA-1-PLUS&quot; xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;cD10bHMtZXhwb3J0ZXIsLG49Z2VwZXR0byxyPUVCOTMxRTc0MDNBQTAwRUMzNTM2M0NGNkEyRUNDNEY3&lt;/auth&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: RECV: &lt;challenge xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;cj1FQjkzMUU3NDAzQUEwMEVDMzUzNjNDRjZBMkVDQzRGN2Y2MzAxMWI3LWRkZjItNGU1Ny1iOGZmLWQwMTg1N2IzNDU0ZSxzPVlUbG1ORGhoT1dNdE9USmpZeTAwTUdWbExXSmpZVEl0WTJZM05UTTNNR1l4TmpaaCxpPTEwMDAw&lt;/challenge&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: handle SCRAM-SHA-1-PLUS (challenge) called for challenge
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: SENT: &lt;response xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;Yz1jRDEwYkhNdFpYaHdiM0owWlhJc0xLeUk5L0VYR3hUUXc4Y0tuYUc2a0pnbnFOR2syc1B6NDlDdDdWZG16RFpqLHI9RUI5MzFFNzQwM0FBMDBFQzM1MzYzQ0Y2QTJFQ0M0RjdmNjMwMTFiNy1kZGYyLTRlNTctYjhmZi1kMDE4NTdiMzQ1NGUscD0zcFNmMzdYMnJCNytzSEhqRFBHU3dITVdYdTA9&lt;/response&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: RECV: &lt;success xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;dj1QcEpKdG0rYW1aUTljY2EwZWZhS3pFYVQ2bmM9&lt;/success&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: handle SCRAM-SHA-1-PLUS (challenge) called for success
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: SASL SCRAM-SHA-1-PLUS auth successful
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: SENT: &lt;?xml version=&quot;1.0&quot;?&gt;&lt;stream:stream to=&quot;localhost&quot; xml:lang=&quot;en&quot; version=&quot;1.0&quot; xmlns=&quot;jabber:client&quot; xmlns:stream=&quot;http://etherx.jabber.org/streams&quot; from=&quot;gepetto@localhost&quot;&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: RECV: &lt;stream:stream to=&quot;gepetto@localhost&quot; lang=&quot;en&quot; version=&quot;1.0&quot; id=&quot;ed294d68-a333-4c2a-877f-307387e7c181&quot; from=&quot;localhost&quot;&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: Reopened stream successfully.
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: RECV: &lt;features xmlns=&quot;http://etherx.jabber.org/streams&quot;&gt;&lt;c hash=&quot;sha-1&quot; xmlns=&quot;http://jabber.org/protocol/caps&quot; ver=&quot;tl4c2Bso3N3K2cyrRmViLaAW25M=&quot; node=&quot;http://prosody.im&quot;/&gt;&lt;sub xmlns=&quot;urn:xmpp:features:pre-approval&quot;/&gt;&lt;ver xmlns=&quot;urn:xmpp:features:rosterver&quot;/&gt;&lt;bind xmlns=&quot;urn:ietf:params:xml:ns:xmpp-bind&quot;&gt;&lt;required/&gt;&lt;/bind&gt;&lt;session xmlns=&quot;urn:ietf:params:xml:ns:xmpp-session&quot;&gt;&lt;optional/&gt;&lt;/session&gt;&lt;sm xmlns=&quot;urn:xmpp:sm:2&quot;/&gt;&lt;sm xmlns=&quot;urn:xmpp:sm:3&quot;/&gt;&lt;csi xmlns=&quot;urn:xmpp:csi:0&quot;/&gt;&lt;limits xmlns=&quot;urn:xmpp:stream-limits:0&quot;&gt;&lt;max-bytes&gt;262144&lt;/max-bytes&gt;&lt;idle-seconds&gt;840&lt;/idle-seconds&gt;&lt;/limits&gt;&lt;/features&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: SENT: &lt;iq id=&quot;_xmpp_bind1&quot; type=&quot;set&quot;&gt;&lt;bind xmlns=&quot;urn:ietf:params:xml:ns:xmpp-bind&quot;&gt;&lt;required/&gt;&lt;/bind&gt;&lt;/iq&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: RECV: &lt;iq id=&quot;_xmpp_bind1&quot; type=&quot;result&quot;&gt;&lt;bind xmlns=&quot;urn:ietf:params:xml:ns:xmpp-bind&quot;&gt;&lt;jid&gt;gepetto@localhost/UiVnGBp6GJqG&lt;/jid&gt;&lt;/bind&gt;&lt;/iq&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: Bind successful.
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: SENT: &lt;enable xmlns=&quot;urn:xmpp:sm:3&quot; resume=&quot;true&quot;/&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: RECV: &lt;enabled id=&quot;UcBTIB2nT283&quot; xmlns=&quot;urn:xmpp:sm:3&quot; max=&quot;600&quot; resume=&quot;true&quot;/&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+[ Info: Connected!
+┌ Debug: SENT: &lt;/stream:stream&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: RECV: &lt;a h=&quot;0&quot; xmlns=&quot;urn:xmpp:sm:3&quot;/&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: RECV: &lt;/stream:stream&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: Closing socket.
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+[ Info: Disconnected!
+┌ Debug: Stopping event loop.
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug: Event loop completed.
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15</code></pre><p>This was <strong>very</strong> verbose! Strophe.jl replaces the default logger of libstrophe with the <a href="../../95-reference/#Strophe.logger"><code>Strophe.logger</code></a> function. You can check its implementation, it simply translates the libstrophe log levels (see <a href="../../../low-level-api/95-reference/03_context_objects/#Strophe.LibStrophe.xmpp_log_level_t"><code>Strophe.LibStrophe.xmpp_log_level_t</code></a>) to Julia&#39;s logging system.</p><h2 id="Displaying-libstrophe&#39;s-area-parameter"><a class="docs-heading-anchor" href="#Displaying-libstrophe&#39;s-area-parameter">Displaying libstrophe&#39;s area parameter</a><a id="Displaying-libstrophe&#39;s-area-parameter-1"></a><a class="docs-heading-anchor-permalink" href="#Displaying-libstrophe&#39;s-area-parameter" title="Permalink"></a></h2><p>Libstrophe provides a key <code>area</code> that gets attached to the log event. We can use the <code>meta_formatter</code> argument of <a href="https://docs.julialang.org/en/v1/stdlib/Logging/#Base.CoreLogging.ConsoleLogger"><code>ConsoleLogger</code></a> to add this information to the log statements. We use Base.CoreLogging.default_metafmt as a template to get started.</p><pre><code class="language-julia hljs">function meta_formatter(level::LogLevel, _module, group, id, file, line)
+    @nospecialize
+    color = Logging.default_logcolor(level)
+    prefix = string(level == Warn ? &quot;Warning&quot; : string(level), &#39;[&#39;, group, &#39;]&#39;, &#39;:&#39;)
+    suffix::String = &quot;&quot;
+    Info &lt;= level &lt; Warn &amp;&amp; return color, prefix, suffix
+    _module !== nothing &amp;&amp; (suffix *= string(_module)::String)
+    if file !== nothing
+        _module !== nothing &amp;&amp; (suffix *= &quot; &quot;)
+        suffix *= contractuser(file)::String
+        if line !== nothing
+            suffix *= &quot;:$(isa(line, UnitRange) ? &quot;$(first(line))-$(last(line))&quot; : line)&quot;
+        end
+    end
+    !isempty(suffix) &amp;&amp; (suffix = &quot;@ &quot; * suffix)
+    return color, prefix, suffix
+end
+debuglogger = ConsoleLogger(stderr, Logging.Debug; meta_formatter)
+with_logger(debuglogger) do
+    Strophe.connect(conn) # Will raise a StropheError if connection fails.
+    Strophe.run(conn) # Run the internal event loop from libstrophe
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">┌ Debug[conn]: Connecting via altdomain.
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[sock]: Connecting to localhost:5222 via ::1
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[sock]: sock_connect() result 22
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: connection successful
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;?xml version=&quot;1.0&quot;?&gt;&lt;stream:stream to=&quot;localhost&quot; xml:lang=&quot;en&quot; version=&quot;1.0&quot; xmlns=&quot;jabber:client&quot; xmlns:stream=&quot;http://etherx.jabber.org/streams&quot;&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: RECV: &lt;stream:stream lang=&quot;en&quot; version=&quot;1.0&quot; id=&quot;343466fc-bbc6-4738-a10c-1c10319705a5&quot; from=&quot;localhost&quot;&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: RECV: &lt;features xmlns=&quot;http://etherx.jabber.org/streams&quot;&gt;&lt;starttls xmlns=&quot;urn:ietf:params:xml:ns:xmpp-tls&quot;&gt;&lt;required/&gt;&lt;/starttls&gt;&lt;limits xmlns=&quot;urn:xmpp:stream-limits:0&quot;&gt;&lt;max-bytes&gt;262144&lt;/max-bytes&gt;&lt;idle-seconds&gt;840&lt;/idle-seconds&gt;&lt;/limits&gt;&lt;/features&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;starttls xmlns=&quot;urn:ietf:params:xml:ns:xmpp-tls&quot;/&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: RECV: &lt;proceed xmlns=&quot;urn:ietf:params:xml:ns:xmpp-tls&quot;/&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: handle proceedtls called for proceed
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: proceeding with TLS
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[tls]: Certificate verification FAILED, result=X509_V_ERR_DEPTH_ZERO_SELF_SIGNED_CERT(18)
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[tls]: User decided to connect anyways
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[tls]: Subject=/CN=localhost
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[tls]: Issuer=/CN=localhost
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;?xml version=&quot;1.0&quot;?&gt;&lt;stream:stream to=&quot;localhost&quot; xml:lang=&quot;en&quot; version=&quot;1.0&quot; xmlns=&quot;jabber:client&quot; xmlns:stream=&quot;http://etherx.jabber.org/streams&quot; from=&quot;gepetto@localhost&quot;&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: RECV: &lt;stream:stream to=&quot;gepetto@localhost&quot; lang=&quot;en&quot; version=&quot;1.0&quot; id=&quot;bcc4db64-6ed2-4528-9cd8-57f914d3e85a&quot; from=&quot;localhost&quot;&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: RECV: &lt;features xmlns=&quot;http://etherx.jabber.org/streams&quot;&gt;&lt;register xmlns=&quot;http://jabber.org/features/iq-register&quot;/&gt;&lt;register xmlns=&quot;urn:xmpp:invite&quot;/&gt;&lt;register xmlns=&quot;urn:xmpp:ibr-token:0&quot;/&gt;&lt;mechanisms xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;&lt;mechanism&gt;PLAIN&lt;/mechanism&gt;&lt;mechanism&gt;SCRAM-SHA-1&lt;/mechanism&gt;&lt;mechanism&gt;SCRAM-SHA-1-PLUS&lt;/mechanism&gt;&lt;mechanism&gt;OAUTHBEARER&lt;/mechanism&gt;&lt;/mechanisms&gt;&lt;sasl-channel-binding xmlns=&quot;urn:xmpp:sasl-cb:0&quot;&gt;&lt;channel-binding type=&quot;tls-exporter&quot;/&gt;&lt;/sasl-channel-binding&gt;&lt;limits xmlns=&quot;urn:xmpp:stream-limits:0&quot;&gt;&lt;max-bytes&gt;262144&lt;/max-bytes&gt;&lt;idle-seconds&gt;840&lt;/idle-seconds&gt;&lt;/limits&gt;&lt;/features&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;auth mechanism=&quot;SCRAM-SHA-1-PLUS&quot; xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;cD10bHMtZXhwb3J0ZXIsLG49Z2VwZXR0byxyPTBEMDExNTU1QjVEREJEQzNBNDg4MjJDOEFGQTE5Mzgx&lt;/auth&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: RECV: &lt;challenge xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;cj0wRDAxMTU1NUI1RERCREMzQTQ4ODIyQzhBRkExOTM4MTAxMWQ1M2NiLWIyMjMtNDNmZS1hNmNiLWU0NTE0MzliMDlkNyxzPVlUbG1ORGhoT1dNdE9USmpZeTAwTUdWbExXSmpZVEl0WTJZM05UTTNNR1l4TmpaaCxpPTEwMDAw&lt;/challenge&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: handle SCRAM-SHA-1-PLUS (challenge) called for challenge
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;response xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;Yz1jRDEwYkhNdFpYaHdiM0owWlhJc0xIWDlWVWQxZ2FVZVpqdVExQVJUM3FtaW5VcjlaTE5hTGdud3VCcUhha0duLHI9MEQwMTE1NTVCNUREQkRDM0E0ODgyMkM4QUZBMTkzODEwMTFkNTNjYi1iMjIzLTQzZmUtYTZjYi1lNDUxNDM5YjA5ZDcscD1hRGNjcU5mVTJCSElnU2NMaW9JL2NteHZkUHM9&lt;/response&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: RECV: &lt;success xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;dj1VekVlTDNWNGNWNGJRTGx1Uk1RTWxBbjB2L289&lt;/success&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: handle SCRAM-SHA-1-PLUS (challenge) called for success
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: SASL SCRAM-SHA-1-PLUS auth successful
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;?xml version=&quot;1.0&quot;?&gt;&lt;stream:stream to=&quot;localhost&quot; xml:lang=&quot;en&quot; version=&quot;1.0&quot; xmlns=&quot;jabber:client&quot; xmlns:stream=&quot;http://etherx.jabber.org/streams&quot; from=&quot;gepetto@localhost&quot;&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: RECV: &lt;stream:stream to=&quot;gepetto@localhost&quot; lang=&quot;en&quot; version=&quot;1.0&quot; id=&quot;52255484-38a6-4a89-9d62-1e23e2cc3e01&quot; from=&quot;localhost&quot;&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: Reopened stream successfully.
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: RECV: &lt;features xmlns=&quot;http://etherx.jabber.org/streams&quot;&gt;&lt;c hash=&quot;sha-1&quot; xmlns=&quot;http://jabber.org/protocol/caps&quot; ver=&quot;tl4c2Bso3N3K2cyrRmViLaAW25M=&quot; node=&quot;http://prosody.im&quot;/&gt;&lt;sub xmlns=&quot;urn:xmpp:features:pre-approval&quot;/&gt;&lt;ver xmlns=&quot;urn:xmpp:features:rosterver&quot;/&gt;&lt;bind xmlns=&quot;urn:ietf:params:xml:ns:xmpp-bind&quot;&gt;&lt;required/&gt;&lt;/bind&gt;&lt;session xmlns=&quot;urn:ietf:params:xml:ns:xmpp-session&quot;&gt;&lt;optional/&gt;&lt;/session&gt;&lt;sm xmlns=&quot;urn:xmpp:sm:2&quot;/&gt;&lt;sm xmlns=&quot;urn:xmpp:sm:3&quot;/&gt;&lt;csi xmlns=&quot;urn:xmpp:csi:0&quot;/&gt;&lt;limits xmlns=&quot;urn:xmpp:stream-limits:0&quot;&gt;&lt;max-bytes&gt;262144&lt;/max-bytes&gt;&lt;idle-seconds&gt;840&lt;/idle-seconds&gt;&lt;/limits&gt;&lt;/features&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;iq id=&quot;_xmpp_bind1&quot; type=&quot;set&quot;&gt;&lt;bind xmlns=&quot;urn:ietf:params:xml:ns:xmpp-bind&quot;&gt;&lt;required/&gt;&lt;/bind&gt;&lt;/iq&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: RECV: &lt;iq id=&quot;_xmpp_bind1&quot; type=&quot;result&quot;&gt;&lt;bind xmlns=&quot;urn:ietf:params:xml:ns:xmpp-bind&quot;&gt;&lt;jid&gt;gepetto@localhost/7-rbrrKOqsfU&lt;/jid&gt;&lt;/bind&gt;&lt;/iq&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: Bind successful.
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;enable xmlns=&quot;urn:xmpp:sm:3&quot; resume=&quot;true&quot;/&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: RECV: &lt;enabled id=&quot;GZ7uahJGHuzA&quot; xmlns=&quot;urn:xmpp:sm:3&quot; max=&quot;600&quot; resume=&quot;true&quot;/&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+[ Info[logging]: Connected!
+┌ Debug[conn]: SENT: &lt;/stream:stream&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: RECV: &lt;a h=&quot;0&quot; xmlns=&quot;urn:xmpp:sm:3&quot;/&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: RECV: &lt;/stream:stream&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[xmpp]: Closing socket.
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+[ Info[logging]: Disconnected!
+┌ Debug[event]: Stopping event loop.
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[event]: Event loop completed.
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15</code></pre><p>Now, each log statement also contains the group. However we can do better, for example using <a href="https://github.com/JuliaLogging/LoggingExtras.jl">LoggingExtras.jl</a></p><h2 id="Filtering-log-events-based-on-libstrophe&#39;s-area"><a class="docs-heading-anchor" href="#Filtering-log-events-based-on-libstrophe&#39;s-area">Filtering log events based on libstrophe&#39;s area</a><a id="Filtering-log-events-based-on-libstrophe&#39;s-area-1"></a><a class="docs-heading-anchor-permalink" href="#Filtering-log-events-based-on-libstrophe&#39;s-area" title="Permalink"></a></h2><p>LoggingExtras.jl&#39;s <a href="https://julialogging.github.io/reference/loggingextras/#LoggingExtras.EarlyFilteredLogger"><code>EarlyFilteredLogger</code></a> is well adapted to the task. We can simply write a function that discriminates based on the group of the log event.</p><pre><code class="language-julia hljs">using LoggingExtras
+selected_group = :conn
+debuglogger = EarlyFilteredLogger(debuglogger) do (level, _module, group, id)
+    return (_module == Strophe &amp;&amp; group == selected_group) || (_module != Strophe)
+end
+with_logger(debuglogger) do
+    Strophe.connect(conn) # Will raise a StropheError if connection fails.
+    Strophe.run(conn) # Run the internal event loop from libstrophe
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">┌ Debug[conn]: Connecting via altdomain.
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;?xml version=&quot;1.0&quot;?&gt;&lt;stream:stream to=&quot;localhost&quot; xml:lang=&quot;en&quot; version=&quot;1.0&quot; xmlns=&quot;jabber:client&quot; xmlns:stream=&quot;http://etherx.jabber.org/streams&quot;&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;starttls xmlns=&quot;urn:ietf:params:xml:ns:xmpp-tls&quot;/&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;?xml version=&quot;1.0&quot;?&gt;&lt;stream:stream to=&quot;localhost&quot; xml:lang=&quot;en&quot; version=&quot;1.0&quot; xmlns=&quot;jabber:client&quot; xmlns:stream=&quot;http://etherx.jabber.org/streams&quot; from=&quot;gepetto@localhost&quot;&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;auth mechanism=&quot;SCRAM-SHA-1-PLUS&quot; xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;cD10bHMtZXhwb3J0ZXIsLG49Z2VwZXR0byxyPUQ4NDA1MzJBQTY3MDcyOEVFMDdGMzJGRTMwNTAwNjhD&lt;/auth&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;response xmlns=&quot;urn:ietf:params:xml:ns:xmpp-sasl&quot;&gt;Yz1jRDEwYkhNdFpYaHdiM0owWlhJc0xCOGJqSnpZcUFtcEc1QUFRZzMvdUhpNWFxZnBWMmdrZzlJVEhma3BBdkVXLHI9RDg0MDUzMkFBNjcwNzI4RUUwN0YzMkZFMzA1MDA2OENhNzMyMGE4NS0yZTk2LTQzMDktYTQ3Ny0xYmY3MzcxNjc5ODEscD1WSThhTXhMZXZwaHY0VXBSbmo2K0hweFVZQ1E9&lt;/response&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;?xml version=&quot;1.0&quot;?&gt;&lt;stream:stream to=&quot;localhost&quot; xml:lang=&quot;en&quot; version=&quot;1.0&quot; xmlns=&quot;jabber:client&quot; xmlns:stream=&quot;http://etherx.jabber.org/streams&quot; from=&quot;gepetto@localhost&quot;&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;iq id=&quot;_xmpp_bind1&quot; type=&quot;set&quot;&gt;&lt;bind xmlns=&quot;urn:ietf:params:xml:ns:xmpp-bind&quot;&gt;&lt;required/&gt;&lt;/bind&gt;&lt;/iq&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+┌ Debug[conn]: SENT: &lt;enable xmlns=&quot;urn:xmpp:sm:3&quot; resume=&quot;true&quot;/&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+[ Info[logging]: Connected!
+┌ Debug[conn]: SENT: &lt;/stream:stream&gt;
+└ @ Strophe ~/work/Strophe.jl/Strophe.jl/src/log.jl:15
+[ Info[logging]: Disconnected!</code></pre><p>We now have a logger that only handles <code>conn</code> events!</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../bot/">« Bot example</a><a class="docs-footer-nextpage" href="../roster/">Roster example »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Saturday 14 March 2026 21:36">Saturday 14 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>

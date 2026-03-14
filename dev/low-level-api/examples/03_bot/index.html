@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Bot Example · Strophe.jl</title><meta name="title" content="Bot Example · Strophe.jl"/><meta property="og:title" content="Bot Example · Strophe.jl"/><meta property="twitter:title" content="Bot Example · Strophe.jl"/><meta name="description" content="Documentation for Strophe.jl."/><meta property="og:description" content="Documentation for Strophe.jl."/><meta property="twitter:description" content="Documentation for Strophe.jl."/><meta property="og:url" content="https://klafyvel.github.io/Strophe.jl/low-level-api/examples/03_bot/"/><meta property="twitter:url" content="https://klafyvel.github.io/Strophe.jl/low-level-api/examples/03_bot/"/><link rel="canonical" href="https://klafyvel.github.io/Strophe.jl/low-level-api/examples/03_bot/"/><script data-outdated-warner src="../../../assets/warner.js"></script><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.050/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.8/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../../assets/documenter.js"></script><script src="../../../search_index.js"></script><script src="../../../siteinfo.js"></script><script src="../../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-mocha.css" data-theme-name="catppuccin-mocha"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-macchiato.css" data-theme-name="catppuccin-macchiato"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-frappe.css" data-theme-name="catppuccin-frappe"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/catppuccin-latte.css" data-theme-name="catppuccin-latte"/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../../">Strophe.jl</a></span></div><button class="docs-search-query input is-rounded is-small is-clickable my-2 mx-auto py-1 px-2" id="documenter-search-query">Search docs (Ctrl + /)</button><ul class="docs-menu"><li><a class="tocitem" href="../../../">Strophe</a></li><li><a class="tocitem" href="../../../21_differences_with_libstrophe/">Noteworthy differences with libstrophe</a></li><li><a class="tocitem" href="../../../91-developper/">Developer Documentation</a></li><li><a class="tocitem" href="../../../95-reference/">Reference</a></li><li><a class="tocitem" href="../../../96-changelog/">Changelog</a></li><li><span class="tocitem">High level API</span><ul><li><a class="tocitem" href="../../../high-level-api/">High-Level API</a></li><li><a class="tocitem" href="../../../high-level-api/95-reference/">Reference</a></li><li><input class="collapse-toggle" id="menuitem-6-3" type="checkbox"/><label class="tocitem" for="menuitem-6-3"><span class="docs-label">Examples</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../../high-level-api/examples/">Examples</a></li><li><a class="tocitem" href="../../../high-level-api/examples/basic/">Basic example</a></li><li><a class="tocitem" href="../../../high-level-api/examples/bot/">Bot example</a></li><li><a class="tocitem" href="../../../high-level-api/examples/logging/">Logging example</a></li><li><a class="tocitem" href="../../../high-level-api/examples/roster/">Roster example</a></li></ul></li></ul></li><li><span class="tocitem">Low level API</span><ul><li><a class="tocitem" href="../../">Low-level API</a></li><li><input class="collapse-toggle" id="menuitem-7-2" type="checkbox"/><label class="tocitem" for="menuitem-7-2"><span class="docs-label">Reference</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../../95-reference/">Reference</a></li><li><a class="tocitem" href="../../95-reference/01_misc/">Misc</a></li><li><a class="tocitem" href="../../95-reference/02_initialization/">Initialization, Shutdown, and Versioning</a></li><li><a class="tocitem" href="../../95-reference/03_context_objects/">Context Objects</a></li><li><a class="tocitem" href="../../95-reference/04_connection/">Connection Management</a></li><li><a class="tocitem" href="../../95-reference/05_ssl/">SSL/TLS Specific Functionality</a></li><li><a class="tocitem" href="../../95-reference/06_event_loop/">Event Loop</a></li><li><a class="tocitem" href="../../95-reference/07_stanza/">Stanza</a></li><li><a class="tocitem" href="../../95-reference/08_stanza_handlers/">Stanza and timed event handlers</a></li><li><a class="tocitem" href="../../95-reference/09_jid/">JID Creation and Parsing</a></li><li><a class="tocitem" href="../../95-reference/10_rng/">Pseudo-Random Number Generator</a></li><li><a class="tocitem" href="../../95-reference/11_digest/">Message Digests</a></li><li><a class="tocitem" href="../../95-reference/12_encodings/">Encodings</a></li><li><a class="tocitem" href="../../95-reference/13_constants/">Constants</a></li></ul></li><li><input class="collapse-toggle" id="menuitem-7-3" type="checkbox" checked/><label class="tocitem" for="menuitem-7-3"><span class="docs-label">Examples</span><i class="docs-chevron"></i></label><ul class="collapsed"><li><a class="tocitem" href="../">Examples</a></li><li><a class="tocitem" href="../01_basic/">Basic example</a></li><li><a class="tocitem" href="../02_roster/">Roster example</a></li><li class="is-active"><a class="tocitem" href>Bot Example</a><ul class="internal"><li><a class="tocitem" href="#Boilerplate"><span>Boilerplate</span></a></li><li><a class="tocitem" href="#Structure-of-the-bot"><span>Structure of the bot</span></a></li><li><a class="tocitem" href="#Global-state"><span>Global state</span></a></li><li><a class="tocitem" href="#Version-handler"><span>Version handler</span></a></li><li><a class="tocitem" href="#Quit-handler"><span>Quit handler</span></a></li><li><a class="tocitem" href="#Message-handler"><span>Message handler</span></a></li><li><a class="tocitem" href="#Connection-handler"><span>Connection handler</span></a></li><li><a class="tocitem" href="#Main-function"><span>Main function</span></a></li><li><a class="tocitem" href="#Checking-the-bot-answers"><span>Checking the bot answers</span></a></li></ul></li></ul></li></ul></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><a class="docs-sidebar-button docs-navbar-link fa-solid fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Low level API</a></li><li><a class="is-disabled">Examples</a></li><li class="is-active"><a href>Bot Example</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Bot Example</a></li></ul></nav><div class="docs-right"><a class="docs-navbar-link" href="https://github.com/Klafyvel/Strophe.jl" title="View the repository on GitHub"><span class="docs-icon fa-brands"></span><span class="docs-label is-hidden-touch">GitHub</span></a><a class="docs-navbar-link" href="https://github.com/Klafyvel/Strophe.jl/blob/main/docs/src/low-level-api/examples/03_bot.jl#" title="Edit source on GitHub"><span class="docs-icon fa-solid"></span></a><a class="docs-settings-button docs-navbar-link fa-solid fa-gear" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-article-toggle-button fa-solid fa-chevron-up" id="documenter-article-toggle-button" href="javascript:;" title="Collapse all docstrings"></a></div></header><article class="content" id="documenter-page"><h1 id="low-level-bot-example"><a class="docs-heading-anchor" href="#low-level-bot-example">Bot Example</a><a id="low-level-bot-example-1"></a><a class="docs-heading-anchor-permalink" href="#low-level-bot-example" title="Permalink"></a></h1><p>This is a port in Julia of <a href="https://github.com/strophe/libstrophe/blob/master/examples/bot.c">the bot example from libstrophe</a>.</p><p>You need the a server running on localhost (see <a href="../#low-level-examples">low-level-examples</a> to set up a local xmpp server using docker-compose. If that is what you are using, start it with <code>docker-compose up</code>. Depending on your platform, you might need sudo.</p><p>You also need <a href="https://salsa.debian.org/mdosch/go-sendxmpp">go-sendxmpp</a> to listen to messages from the other side.</p><p>If you need a simpler example on how to set-up a basic connection, you can read first <a href="../01_basic/#low-level-basic-example">the basic example</a> page.</p><pre><code class="language-julia hljs">import Strophe: LibStrophe, sockopt_cb_keepalive</code></pre><h2 id="Boilerplate"><a class="docs-heading-anchor" href="#Boilerplate">Boilerplate</a><a id="Boilerplate-1"></a><a class="docs-heading-anchor-permalink" href="#Boilerplate" title="Permalink"></a></h2><p>We want some facilities to listen to our xmpp server. The idea is quite simple: run <code>go-sendxmpp -n -p plopiplop -u pinocchio@localhost -l</code> to listen to messages and collect messages in a buffer.</p><p>First, we run a process in parallel to listen to our inbox.</p><pre><code class="language-julia hljs">pinocchio = PipeBuffer()
+listener = run(
+    pipeline(
+        `go-sendxmpp -n -p plopiplop -u pinocchio@localhost -l`,
+        stdin = devnull, stdout = pinocchio, stderr = devnull
+    ), wait = false
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Process(`<span class="sgr4">go-sendxmpp</span> <span class="sgr4">-n</span> <span class="sgr4">-p</span> <span class="sgr4">plopiplop</span> <span class="sgr4">-u</span> <span class="sgr4">pinocchio@localhost</span> <span class="sgr4">-l</span>`, ProcessRunning)</code></pre><p>Then, we write a simple function that we will run in parallel of the main thread to send messages to the bot.</p><pre><code class="language-julia hljs">function say_as_pinocchio(to, msg)
+    io = PipeBuffer()
+    write(io, msg)
+    return run(`go-sendxmpp -n -p plopiplop -u pinocchio@localhost $to`, io, devnull, stderr)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">say_as_pinocchio (generic function with 1 method)</code></pre><h2 id="Structure-of-the-bot"><a class="docs-heading-anchor" href="#Structure-of-the-bot">Structure of the bot</a><a id="Structure-of-the-bot-1"></a><a class="docs-heading-anchor-permalink" href="#Structure-of-the-bot" title="Permalink"></a></h2><p><code>libstrophe</code> allows registering handlers. Our bot will be able to respond to version requests, messages, and connections.</p><h2 id="Global-state"><a class="docs-heading-anchor" href="#Global-state">Global state</a><a id="Global-state-1"></a><a class="docs-heading-anchor-permalink" href="#Global-state" title="Permalink"></a></h2><p>In this example, we store the state of the bot in global variables</p><pre><code class="language-julia hljs">reconnect = true</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">true</code></pre><h2 id="Version-handler"><a class="docs-heading-anchor" href="#Version-handler">Version handler</a><a id="Version-handler-1"></a><a class="docs-heading-anchor-permalink" href="#Version-handler" title="Permalink"></a></h2><p>Our bot will implement <a href="https://xmpp.org/extensions/xep-0092.html">XEP-0092 (Software Version)</a>. This means other XMPP entities will be able to send a query for the bot version and we will respond accordingly. The <a href="https://xmpp.org/extensions/xep-0092.html#examples">example section of the XEP</a> is quite explicit on what the reply should look like. We will build something like:</p><pre><code class="language-xml hljs">&lt;iq
+    type=&#39;result&#39;
+    to=&#39;&lt;destination&gt;&#39;
+    from=&#39;&lt;us&gt;&#39;
+    id=&#39;version_1&#39;&gt;
+  &lt;query xmlns=&#39;jabber:iq:version&#39;&gt;
+    &lt;name&gt;LibStrophe example bot&lt;/name&gt;
+    &lt;version&gt;1.0&lt;/version&gt;
+  &lt;/query&gt;
+&lt;/iq&gt;</code></pre><p>As usual with libstrophe, this is done through a callback function. You might want to have a look at the <a href="../../95-reference/07_stanza/#low-level-stanza">low-level stanza handling reference</a>.</p><pre><code class="language-julia hljs">function version_handler(conn, stanza, userdata)
+    # As in the basic example, we user the opaque `userdata` to pass around the
+    # context.
+    ctx = userdata
+    @info &quot;Received version request.&quot; LibStrophe.xmpp_stanza_get_from(stanza)
+
+    reply = LibStrophe.xmpp_stanza_reply(stanza)
+    LibStrophe.xmpp_stanza_set_type(reply, &quot;result&quot;)
+
+    # First build the `&lt;query/&gt;` node
+    query = LibStrophe.xmpp_stanza_new(ctx)
+    LibStrophe.xmpp_stanza_set_name(query, &quot;query&quot;)
+    ns = LibStrophe.xmpp_stanza_get_ns(LibStrophe.xmpp_stanza_get_children(stanza))
+    if (ns ≠ C_NULL)
+        LibStrophe.xmpp_stanza_set_ns(query, ns)
+    end
+    # Then the `&lt;name/&gt;` node
+    name = LibStrophe.xmpp_stanza_new(ctx)
+    LibStrophe.xmpp_stanza_set_name(name, &quot;name&quot;)
+    # We register it as a child of the `&lt;query/&gt;`
+    LibStrophe.xmpp_stanza_add_child(query, name)
+    # And we tell libstrophe that this object is now its own responsibility.
+    LibStrophe.xmpp_stanza_release(name)
+
+    # Then we fill the name node with the correct string
+    text = LibStrophe.xmpp_stanza_new(ctx)
+    LibStrophe.xmpp_stanza_set_text(text, &quot;LibStrophe example bot&quot;)
+    LibStrophe.xmpp_stanza_add_child(name, text)
+    LibStrophe.xmpp_stanza_release(text)
+
+    # A similar procedure applies for the version.
+    version = LibStrophe.xmpp_stanza_new(ctx)
+    LibStrophe.xmpp_stanza_set_name(version, &quot;version&quot;)
+    LibStrophe.xmpp_stanza_add_child(query, version)
+    LibStrophe.xmpp_stanza_release(version)
+
+    text = LibStrophe.xmpp_stanza_new(ctx)
+    LibStrophe.xmpp_stanza_set_text(text, &quot;1.0&quot;)
+    LibStrophe.xmpp_stanza_add_child(version, text)
+    LibStrophe.xmpp_stanza_release(text)
+
+    # Finally we register the `&lt;query/&gt;` node as a child of the reply
+    LibStrophe.xmpp_stanza_add_child(reply, query)
+    LibStrophe.xmpp_stanza_release(query)
+
+    # and we send it.
+    LibStrophe.xmpp_send(conn, reply)
+    LibStrophe.xmpp_stanza_release(reply)
+    return Int32(1)
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">version_handler (generic function with 1 method)</code></pre><p>As usual when dealing with C API, we need to explicitely create a function pointer for the callback.</p><pre><code class="language-julia hljs">const version_handler_c = @cfunction(
+    version_handler, Cint,
+    (Ptr{LibStrophe.xmpp_conn_t}, Ptr{LibStrophe.xmpp_stanza_t}, Ptr{Cvoid})
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Ptr{Nothing}(0x00007fc567d12860)</code></pre><h2 id="Quit-handler"><a class="docs-heading-anchor" href="#Quit-handler">Quit handler</a><a id="Quit-handler-1"></a><a class="docs-heading-anchor-permalink" href="#Quit-handler" title="Permalink"></a></h2><p>A simple handler that will disconnect us uppon request.</p><pre><code class="language-julia hljs">function _quit_handler(conn, userdata)
+    LibStrophe.xmpp_disconnect(conn)
+    return Int32(0)
+end
+const _quit_handler_c = @cfunction(
+    _quit_handler, Cint,
+    (Ptr{LibStrophe.xmpp_conn_t}, Ptr{Cvoid})
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Ptr{Nothing}(0x00007fc567d12a70)</code></pre><h2 id="Message-handler"><a class="docs-heading-anchor" href="#Message-handler">Message handler</a><a id="Message-handler-1"></a><a class="docs-heading-anchor-permalink" href="#Message-handler" title="Permalink"></a></h2><p>We will register a handler that responds to messages here. If you are unfamiliar with it, you can check <a href="https://www.rfc-editor.org/rfc/rfc6121.html#section-5.2">the relevant section of RFC6121 on messages syntax</a>.</p><p>A message stanza typically looks like this:</p><pre><code class="language-xml hljs">&lt;message
+       from=&#39;juliet@example.com/balcony&#39;
+       id=&#39;ktx72v49&#39;
+       to=&#39;romeo@example.net&#39;
+       type=&#39;chat&#39;
+       xml:lang=&#39;en&#39;&gt;
+     &lt;body&gt;Art thou not Romeo, and a Montague?&lt;/body&gt;
+&lt;/message&gt;</code></pre><pre><code class="language-julia hljs">function message_handler(conn, stanza, userdata)
+    # First we recover the body of the message
+    body = LibStrophe.xmpp_stanza_get_child_by_name(stanza, &quot;body&quot;)
+    body == C_NULL &amp;&amp; return 1
+    type = LibStrophe.xmpp_stanza_get_type(stanza)
+    (type != C_NULL &amp;&amp; unsafe_string(type) == &quot;error&quot;) &amp;&amp; return 1
+
+    # Then we extract its text
+    intext = LibStrophe.xmpp_stanza_get_text(body)
+    intext_str = unsafe_string(intext)
+    LibStrophe.xmpp_free(ctx, intext)
+
+    @info &quot;Incoming message&quot; LibStrophe.xmpp_stanza_get_from(stanza) intext_str
+
+    reply = LibStrophe.xmpp_stanza_reply(stanza)
+    if (LibStrophe.xmpp_stanza_get_type(reply) == C_NULL)
+        LibStrophe.xmpp_stanza_set_type(reply, &quot;chat&quot;)
+    end
+
+    if intext_str == &quot;quit&quot;
+        replytext = &quot;bye!&quot;
+        LibStrophe.xmpp_timed_handler_add(conn, _quit_handler_c, 500, C_NULL)
+    elseif intext_str == &quot;reconnect&quot;
+        replytext = &quot;alright, let&#39;s see what happens!&quot;
+        global reconnect = true
+        LibStrophe.xmpp_timed_handler_add(conn, _quit_handler_c, 500, C_NULL)
+    else
+        replytext = intext_str * &quot; to you too!&quot;
+    end
+    LibStrophe.xmpp_message_set_body(reply, replytext)
+
+    LibStrophe.xmpp_send(conn, reply)
+    LibStrophe.xmpp_stanza_release(reply)
+    return Int32(1)
+end
+const message_handler_c = @cfunction(
+    message_handler, Cint,
+    (Ptr{LibStrophe.xmpp_conn_t}, Ptr{LibStrophe.xmpp_stanza_t}, Ptr{Cvoid})
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Ptr{Nothing}(0x00007fc567d12c70)</code></pre><h2 id="Connection-handler"><a class="docs-heading-anchor" href="#Connection-handler">Connection handler</a><a id="Connection-handler-1"></a><a class="docs-heading-anchor-permalink" href="#Connection-handler" title="Permalink"></a></h2><p>This is what gets called by libstrophe on connection events.</p><pre><code class="language-julia hljs">function connection_handler(conn, status, error, stream_error, userdata)
+    ctx = userdata
+    if status == LibStrophe.XMPP_CONN_CONNECT # We just connected
+        @info &quot;Connected!&quot;
+        LibStrophe.xmpp_handler_add(conn, version_handler_c, &quot;jabber:iq:version&quot;, &quot;iq&quot;, C_NULL, ctx)
+        LibStrophe.xmpp_handler_add(conn, message_handler_c, C_NULL, &quot;message&quot;, C_NULL, ctx)
+        pres = LibStrophe.xmpp_presence_new(ctx) # Send initial &lt;presence/&gt; so that we appear online to contacts
+        LibStrophe.xmpp_send(conn, pres)
+        LibStrophe.xmpp_stanza_release(pres)
+    else
+        @info &quot;Disconnected!&quot;
+        LibStrophe.xmpp_stop(ctx) # stop the event loop
+    end
+    return nothing
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">connection_handler (generic function with 1 method)</code></pre><p>We need to build a c function to get a pointer that we can use as a callback in C code.</p><pre><code class="language-julia hljs">const connection_handler_c = @cfunction(
+    connection_handler, Cvoid, (
+        Ptr{LibStrophe.xmpp_conn_t}, LibStrophe.xmpp_conn_event_t,
+        Cint, Ptr{LibStrophe.xmpp_stream_error_t}, Ptr{Cvoid},
+    )
+)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Ptr{Nothing}(0x00007fc567d12e80)</code></pre><h2 id="Main-function"><a class="docs-heading-anchor" href="#Main-function">Main function</a><a id="Main-function-1"></a><a class="docs-heading-anchor-permalink" href="#Main-function" title="Permalink"></a></h2><p>Our main function is considerably simpler than the original example, because we offer less flexibility on TLS settings, and use a dummy example password. If this is of interest to you, <code>libstrophe</code> allows having a vallback to ask password!</p><pre><code class="language-julia hljs">host = &quot;localhost&quot;
+port = 0 # Will use the default port</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">0</code></pre><p>First, we initialize the library</p><pre><code class="language-julia hljs">LibStrophe.xmpp_initialize()</code></pre><p>Then, we get the default logger. You can silence outputs by passig <code>C_NULL</code>.</p><pre><code class="language-julia hljs">log = LibStrophe.xmpp_get_default_logger(LibStrophe.XMPP_LEVEL_INFO)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Ptr{Strophe.LibStrophe._xmpp_log_t}(0x00007fc55f225050)</code></pre><p>We use it to reate the libstrophe context.</p><pre><code class="language-julia hljs">ctx = LibStrophe.xmpp_ctx_new(C_NULL, log)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Ptr{Strophe.LibStrophe._xmpp_ctx_t}(0x000000001e8f7920)</code></pre><p>We prepare the configuration of the connection through flags</p><pre><code class="language-julia hljs">flags = LibStrophe.XMPP_CONN_FLAG_TRUST_TLS
+jid = &quot;gepetto@localhost&quot;
+password = &quot;plopiplop&quot;
+
+sm_state = C_NULL</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Ptr{Nothing}(0x0000000000000000)</code></pre><p>We use the main loop offered by libstrophe. This will lock the main thread and prevent us from interacting. To make this example self-contained, we run a parallel thread to send text to the bot. You could instead invoke <code>go-sendxmpp</code> manually if you want!</p><pre><code class="language-julia hljs">speaky_task = Threads.@spawn begin
+    sleep(1) # Let&#39;s wait one second for the bot to connect.
+    say_as_pinocchio(jid, &quot;Hello&quot;) # Say hello to the bot
+    yield()
+    sleep(0.5)
+    say_as_pinocchio(jid, &quot;reconnect&quot;) # Try the reconnect procedure
+    yield()
+    sleep(1)
+    say_as_pinocchio(jid, &quot;Hello again&quot;)
+    yield()
+    sleep(0.5)
+    say_as_pinocchio(jid, &quot;quit&quot;) # Make the bot quit
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">Task (runnable, started) @0x00007fc5578e4d30</code></pre><p>The main loop of the bot. We run it in its own thread, and to allow processing of other tasks, we use <a href="../../95-reference/06_event_loop/#Strophe.LibStrophe.xmpp_run_once"><code>Strophe.LibStrophe.xmpp_run_once</code></a> instead of <a href="../../95-reference/06_event_loop/#Strophe.LibStrophe.xmpp_run"><code>Strophe.LibStrophe.xmpp_run</code></a></p><pre><code class="language-julia hljs">function main()
+    while reconnect
+        global reconnect
+        global sm_state
+
+        reconnect = false
+        conn = LibStrophe.xmpp_conn_new(ctx)
+        LibStrophe.xmpp_conn_set_flags(conn, flags)
+        LibStrophe.xmpp_conn_set_jid(conn, jid)
+        LibStrophe.xmpp_conn_set_pass(conn, password)
+
+        # Enable the TCP keepalive callback function provided by LibStrophe
+        LibStrophe.xmpp_conn_set_sockopt_callback(conn, sockopt_cb_keepalive[])
+
+        if sm_state ≠ C_NULL # set Stream-Mangement state if available
+            LibStrophe.xmpp_conn_set_sm_state(conn, sm_state)
+            sm_state = C_NULL
+        end
+
+        connection_status = LibStrophe.xmpp_connect_client(conn, host, port, connection_handler_c, ctx)
+        if connection_status == LibStrophe.XMPP_EOK
+            while LibStrophe.xmpp_conn_is_connected(conn) == 1
+                LibStrophe.xmpp_run_once(ctx, 50) # Run the internal event loop from libstrophe
+                yield()
+            end
+        else
+            @warn &quot;Connection to the server failed! Is the server running? Did you register the test users?&quot;
+        end
+
+        if reconnect # If a reconnect was requested.
+            sm_state = LibStrophe.xmpp_conn_get_sm_state(conn)
+        end
+
+        LibStrophe.xmpp_conn_release(conn) # Release the current connection
+    end
+    return
+end
+botty_task = Threads.@spawn main()
+waitall([speaky_task, botty_task])</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">(Task[Task (done) @0x00007fc5578e4d30, Task (done) @0x00007fc5578e54b0], Task[])</code></pre><p>After exiting the loop, we release the context and shutdown the library.</p><pre><code class="language-julia hljs">LibStrophe.xmpp_ctx_free(ctx)
+LibStrophe.xmpp_shutdown()</code></pre><h2 id="Checking-the-bot-answers"><a class="docs-heading-anchor" href="#Checking-the-bot-answers">Checking the bot answers</a><a id="Checking-the-bot-answers-1"></a><a class="docs-heading-anchor-permalink" href="#Checking-the-bot-answers" title="Permalink"></a></h2><p>Since we had a listener on from the beginning, we received the messages from bot and stored them in <code>pinocchio</code>. Time to read the mail!</p><pre><code class="language-julia hljs">kill(listener)
+readlines(pinocchio)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">String[]</code></pre><p>It looks like it works. In addition, we can see the following in our server logs:</p><pre><code class="nohighlight hljs">info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_256_GCM_SHA384)
+info	Authenticated as gepetto@localhost [prosody:registered]
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client disconnected: connection closed
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_256_GCM_SHA384)
+info	Authenticated as gepetto@localhost [prosody:registered]
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client connected
+info	Stream encrypted (TLSv1.3 with TLS_AES_128_GCM_SHA256)
+info	Authenticated as pinocchio@localhost [prosody:registered]
+info	Client disconnected: connection closed
+info	Client disconnected: connection closed
+info	Client disconnected: unexpected eof while reading</code></pre><p>We see that the listener process for pinocchio connects first, then our bot (gepetto). Then pinocchio connects a few times to send commands, and eventually gepetto reconnects. Pinocchio sends a few more commands before triggereing the disconnection of gepetto.</p><hr/><p><em>This page was generated using <a href="https://github.com/fredrikekre/Literate.jl">Literate.jl</a>.</em></p></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../02_roster/">« Roster example</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="auto">Automatic (OS)</option><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option><option value="catppuccin-latte">catppuccin-latte</option><option value="catppuccin-frappe">catppuccin-frappe</option><option value="catppuccin-macchiato">catppuccin-macchiato</option><option value="catppuccin-mocha">catppuccin-mocha</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 1.17.0 on <span class="colophon-date" title="Saturday 14 March 2026 21:36">Saturday 14 March 2026</span>. Using Julia version 1.12.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
