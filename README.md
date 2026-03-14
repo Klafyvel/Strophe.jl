@@ -23,4 +23,4 @@ pkg> add Strophe
 
 ## Low-Level API
 
-There is a low-level binding that closely maps the C API. Head to [the low-level API section](https://klafyvel.github.io/Strophe.jl/stable/low-level-api/) to learn more!
+There is a low-level binding that closely maps the C API. Head to [the low-level API section](https://klafyvel.github.io/Strophe.jl/dev/low-level-api/) to learn more!
