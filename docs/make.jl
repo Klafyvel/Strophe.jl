@@ -117,7 +117,6 @@ makedocs(;
     ),
     pages = list_pages(skip),
     pagesonly = true,
-    warnonly = true,
 )
 
 deploydocs(; repo = "github.com/Klafyvel/Strophe.jl")
