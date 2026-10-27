@@ -47,7 +47,7 @@ jobs:
         run: docker compose -f scripts/docker-compose.yml exec prosody prosodyctl register pinocchio localhost plopiplop
       - name: create user gepetto
         run: docker compose -f scripts/docker-compose.yml exec prosody prosodyctl register gepetto localhost plopiplop
-      - uses: julia-actions/setup-julia@v2
+      - uses: julia-actions/setup-julia@v3
         with:
           version: ${{ inputs.version }}
           arch: ${{ inputs.arch }}
