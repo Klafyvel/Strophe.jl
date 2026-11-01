@@ -14,6 +14,7 @@ Strophe = {path = ".."}
 [compat]
 Aqua = "0.8"
 JET = "0.11.3"
+Sockets = "1.11"
 TOML = "1.0.3"
 TestItemRunner = "1.1.4"
 TestItems = "1.0.0"
